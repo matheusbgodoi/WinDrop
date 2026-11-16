@@ -20,7 +20,7 @@ typedef struct mt7902_dev {
   void *proxy; /* HANDLE */
   dma_mem mem;
   size_t mem_used;
-  mt7902_ring tx_mcu, tx_fwdl, rx_event, rx_data;
+  mt7902_ring tx_mcu, tx_fwdl, tx_data, rx_event, rx_data;
   uint8_t mcu_seq;
   int io_failed;
 } mt7902_dev;
@@ -60,5 +60,12 @@ int mt7902_start(mt7902_dev *dev, const char *patch_path, const char *ram_path);
  * length, or a negative value on failure. */
 int mt7902_mcu_cmd(mt7902_dev *dev, uint32_t cmd, const void *payload,
                    size_t len, uint8_t *response, size_t response_cap);
+/* Queues one frame on the data ring without waiting for it to go out: the
+ * 32-byte TX descriptor, then the 802.11 frame. `token` comes back in the
+ * firmware's TX-free notification. Returns -1 when the ring is full. */
+#define MT7902_TX_TOKENS 256
+#define MT7902_TX_FRAME_MAX 1900
+int mt7902_tx_frame(mt7902_dev *dev, const uint8_t *txd, const uint8_t *frame,
+                    size_t len, uint16_t *token);
 /* Returns 1 with a frame, 0 when the ring is empty. */
 int mt7902_rx_poll(mt7902_dev *dev, mt7902_ring *ring, mt7902_rx *out);

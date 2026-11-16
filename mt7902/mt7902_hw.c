@@ -8,13 +8,16 @@
 
 #define TX_MCU_NDESC 64
 #define TX_FWDL_NDESC 64
+#define TX_DATA_NDESC MT7902_TX_TOKENS
+#define TX_DATA_BUF_BYTES 2048
+#define TX_HEAD_BYTES 64 /* TX descriptor, then struct mt76_connac_hw_txp */
 /* At most 256, so a ring's descriptors fit one 4 KiB page of the slab. */
 #define RX_EVENT_NDESC 256
 #define RX_DATA_NDESC 256
 #define RX_BUF_BYTES 2048
 #define TX_MCU_BUF_BYTES 2048
 #define FWDL_CHUNK_BYTES 4096
-#define DMA_SLAB_BYTES ((size_t)2 << 20)
+#define DMA_SLAB_BYTES ((size_t)3 << 20)
 /* Descriptors carry the low 32 address bits; the high-bits field is unused. */
 #define DMA_ADDRESS_BITS 32
 
@@ -224,6 +227,37 @@ static int tx_send(mt7902_dev *dev, mt7902_ring *ring, const void *head,
   return 0;
 }
 
+/* The cut-through layout mt7921e_tx_prepare_skb builds: the descriptor and a
+ * page list in the ring buffer, pointing at the frame, which the chip fetches
+ * on its own. The frame sits in the same buffer, after them. */
+int mt7902_tx_frame(mt7902_dev *dev, const uint8_t *txd, const uint8_t *frame,
+                    size_t len, uint16_t *token) {
+  mt7902_ring *ring = &dev->tx_data;
+  if (len > MT7902_TX_FRAME_MAX) return -1;
+  uint32_t i = ring->head, next = (i + 1) % ring->ndesc;
+  if (next == raw_rr(dev, ring->regs + MT_RING_DMA_IDX) % ring->ndesc) return -1;
+
+  uint8_t *buf = dev->mem.va + ring->buf_offset[i];
+  uint32_t frame_phys =
+      (uint32_t)dma_mem_phys(&dev->mem, ring->buf_offset[i]) + TX_HEAD_BYTES;
+  memset(buf, 0, TX_HEAD_BYTES);
+  memcpy(buf, txd, 32);
+  uint16_t msdu_id = (uint16_t)(i | 0x8000u);              /* MT_MSDU_ID_VALID */
+  uint16_t len0 = (uint16_t)(len | 0x8000u);               /* MT_TXD_LEN_LAST */
+  memcpy(buf + 32, &msdu_id, 2);                           /* txp.msdu_id[0] */
+  memcpy(buf + 40, &frame_phys, 4);                        /* txp.ptr[0].buf0 */
+  memcpy(buf + 44, &len0, 2);                              /* txp.ptr[0].len0 */
+  memcpy(buf + TX_HEAD_BYTES, frame, len);
+
+  uint32_t *d = ring->desc + 4 * i;
+  d[2] = d[3] = 0;
+  d[1] = (uint32_t)TX_HEAD_BYTES << MT_DMA_CTL_SD_LEN0_SHIFT | MT_DMA_CTL_LAST_SEC0;
+  ring->head = next;
+  raw_wr(dev, ring->regs + MT_RING_CPU_IDX, next);
+  if (token) *token = (uint16_t)i;
+  return 0;
+}
+
 /* ---- power, reset, DMA ---- */
 
 static int set_ownership(mt7902_dev *dev, int driver) {
@@ -318,6 +352,7 @@ void mt7902_close(mt7902_dev *dev) {
   dma_mem_free(&dev->mem);
   free(dev->tx_mcu.buf_offset);
   free(dev->tx_fwdl.buf_offset);
+  free(dev->tx_data.buf_offset);
   free(dev->rx_event.buf_offset);
   free(dev->rx_data.buf_offset);
   memset(dev, 0, sizeof(*dev));
@@ -360,6 +395,8 @@ int mt7902_bringup(mt7902_dev *dev) {
                  TX_MCU_BUF_BYTES) ||
       ring_alloc(dev, &dev->tx_fwdl, MT_TX_RING(MT7902_TXQ_FWDL), TX_FWDL_NDESC,
                  FWDL_CHUNK_BYTES) ||
+      ring_alloc(dev, &dev->tx_data, MT_TX_RING(MT7902_TXQ_DATA), TX_DATA_NDESC,
+                 TX_DATA_BUF_BYTES) ||
       ring_alloc(dev, &dev->rx_event, MT_RX_RING(MT7902_RXQ_EVENT),
                  RX_EVENT_NDESC, RX_BUF_BYTES) ||
       ring_alloc(dev, &dev->rx_data, MT_RX_RING(MT7902_RXQ_DATA), RX_DATA_NDESC,
@@ -372,6 +409,7 @@ int mt7902_bringup(mt7902_dev *dev) {
   raw_wr(dev, MT_WFDMA0_RST_DTX_PTR, 0xffffffffu);
   tx_ring_start(dev, &dev->tx_mcu);
   tx_ring_start(dev, &dev->tx_fwdl);
+  tx_ring_start(dev, &dev->tx_data);
   rx_ring_start(dev, &dev->rx_event);
   rx_ring_start(dev, &dev->rx_data);
 

@@ -8,7 +8,7 @@ New-Item -ItemType Directory -Force $out | Out-Null
 
 $common = @("$PSScriptRoot\mt7902_hw.c", "$PSScriptRoot\mt7902_radio.c",
             "$PSScriptRoot\dma_mem.c", "$PSScriptRoot\..\tools\regproxy_client.c")
-foreach ($tool in 'fwboot', 'rxtest') {
+foreach ($tool in 'fwboot', 'rxtest', 'txtest') {
   $log = & $tools.Cl /nologo /W4 /WX /O2 /Zi "/Fo$out\\" "/Fd$out\$tool.pdb" `
       "/Fe$out\$tool.exe" "$PSScriptRoot\$tool.c" @common setupapi.lib advapi32.lib
   if ($LASTEXITCODE -ne 0) {

@@ -4,6 +4,9 @@
 #pragma once
 #include "mt7902_hw.h"
 
+/* Regulatory domain handed to the firmware. */
+#define MT7902_COUNTRY "BR"
+
 typedef struct mt7902_caps {
   uint8_t mac[6];
   uint8_t nss;
@@ -26,6 +29,18 @@ int mt7902_monitor_start(mt7902_dev *dev, const mt7902_caps *caps,
 /* Retunes while sniffing. */
 int mt7902_set_channel(mt7902_dev *dev, const mt7902_caps *caps,
                        uint8_t channel);
+
+/* Legacy rates for mt7902_send_frame, in the chip's encoding: PHY mode in
+ * bits 9:6 (0 is CCK, 1 is OFDM), rate index below. */
+#define MT7902_RATE_CCK_1M 0x000
+#define MT7902_RATE_OFDM_6M 0x04b
+#define MT7902_RATE_OFDM_12M 0x04a
+#define MT7902_RATE_OFDM_24M 0x049
+
+/* Queues an 802.11 frame, header included and FCS excluded, at a fixed rate.
+ * `no_ack` is for group-addressed frames and whatever needs no retry. */
+int mt7902_send_frame(mt7902_dev *dev, const uint8_t *frame, size_t len,
+                      uint16_t rate, int no_ack);
 
 /* Packet type of a buffer from the data or event ring (PKT_TYPE_*). */
 uint8_t mt7902_rx_type(const mt7902_rx *rx);

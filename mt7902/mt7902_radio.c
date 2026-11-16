@@ -31,6 +31,17 @@ static int cmd_acked(mt7902_dev *dev, uint32_t cmd, const void *req,
   return 0;
 }
 
+/* A register read through the firmware, answered in order: mt76 sends one
+ * after each command that has no answer of its own, "to avoid PSE buffer
+ * underflow". Without it a run of such commands makes the firmware ask for a
+ * DMA stop. */
+static int mcu_sync(mt7902_dev *dev) {
+  uint8_t req[8] = {0};
+  put_le32(req, MT_PSE_BASE);
+  return cmd_acked(dev, MCU_CE_CMD(MCU_CE_CMD_REG_READ) | MCU_CMD_FIELD_QUERY,
+                   req, sizeof(req), "MCU sync");
+}
+
 /* mt7921_mcu_get_nic_capability: a count, then type/length/value elements. */
 static int query_caps(mt7902_dev *dev, mt7902_caps *caps) {
   uint8_t rsp[2048];
@@ -63,6 +74,64 @@ static int query_caps(mt7902_dev *dev, mt7902_caps *caps) {
   return 0;
 }
 
+/* mt76_connac_mcu_set_channel_domain. Without it the firmware receives on
+ * 5 GHz but puts nothing on air there. Only channels that need no radar
+ * detection are listed, with no restriction flags. */
+static int set_channel_domain(mt7902_dev *dev) {
+  static const uint8_t ch_2g[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
+  static const uint8_t ch_5g[] = {36, 40, 44, 48, 149, 153, 157, 161, 165};
+  uint8_t req[12 + 8 * (sizeof(ch_2g) + sizeof(ch_5g))] = {0};
+  memcpy(req, MT7902_COUNTRY, 2); /* alpha2 */
+  req[5] = 3;                     /* bw_5g: 20, 40, 80 and 160 MHz */
+  req[6] = 3;                     /* bw_6g */
+  req[8] = sizeof(ch_2g);
+  req[9] = sizeof(ch_5g);
+  uint8_t *p = req + 12;
+  for (size_t i = 0; i < sizeof(ch_2g); i++, p += 8) p[0] = ch_2g[i];
+  for (size_t i = 0; i < sizeof(ch_5g); i++, p += 8) p[0] = ch_5g[i];
+  if (mt7902_mcu_cmd(dev, MCU_CE_CMD(MCU_CE_CMD_SET_CHAN_DOMAIN), req,
+                     sizeof(req), NULL, 0)) {
+    log_err("channel domain failed\n");
+    return -1;
+  }
+  return mcu_sync(dev);
+}
+
+/* mt76_connac_mcu_rate_txpower_band: a power limit for every rate on every
+ * channel, eight channels to a message. `band` is 1 for 2.4 GHz, 2 for 5 GHz.
+ * mt76 derives the limits from the regulatory domain; this uses one value. */
+#define SKU_POWER_LIMITS 161
+#define TX_POWER_HALF_DBM (2 * 17)
+
+static int set_rate_txpower(mt7902_dev *dev, uint8_t band) {
+  static const uint8_t ch_2g[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
+  static const uint8_t ch_5g[] = {
+      36,  38,  40,  42,  44,  46,  48,  50,  52,  54,  56,  58,
+      60,  62,  64,  100, 102, 104, 106, 108, 110, 112, 114, 116,
+      118, 120, 122, 124, 126, 128, 132, 134, 136, 138, 140, 142,
+      144, 149, 151, 153, 155, 157, 159, 161, 165, 169, 173, 177};
+  const uint8_t *list = band == 1 ? ch_2g : ch_5g;
+  size_t total = band == 1 ? sizeof(ch_2g) : sizeof(ch_5g);
+  for (size_t at = 0; at < total; at += 8) {
+    size_t n = total - at < 8 ? total - at : 8;
+    uint8_t req[44 + 8 * (1 + SKU_POWER_LIMITS)] = {0};
+    req[4] = (uint8_t)n; /* n_chan */
+    req[5] = band;
+    req[6] = list[at + n - 1] == 177; /* last_msg */
+    memcpy(req + 8, MT7902_COUNTRY, 2);
+    uint8_t *sku = req + 44;
+    for (size_t i = 0; i < n; i++, sku += 1 + SKU_POWER_LIMITS) {
+      sku[0] = list[at + i];
+      memset(sku + 1, TX_POWER_HALF_DBM, SKU_POWER_LIMITS);
+    }
+    if (mt7902_mcu_cmd(dev, MCU_CE_CMD(MCU_CE_CMD_SET_RATE_TX_POWER), req,
+                       44 + n * (1 + SKU_POWER_LIMITS), NULL, 0) ||
+        mcu_sync(dev))
+      return -1;
+  }
+  return 0;
+}
+
 int mt7902_radio_init(mt7902_dev *dev, mt7902_caps *caps) {
   memset(caps, 0, sizeof(*caps));
   if (query_caps(dev, caps)) return -1;
@@ -77,8 +146,11 @@ int mt7902_radio_init(mt7902_dev *dev, mt7902_caps *caps) {
             mt7902_rr(dev, MT_MDP_DCR0) & ~MT_MDP_DCR0_RX_HDR_TRANS_EN);
 
   uint8_t mac_on[4] = {1 /* enable */, 0 /* band */};
-  return cmd_acked(dev, MCU_EXT_CMD(MCU_EXT_CMD_MAC_INIT_CTRL), mac_on,
-                   sizeof(mac_on), "MAC enable");
+  if (cmd_acked(dev, MCU_EXT_CMD(MCU_EXT_CMD_MAC_INIT_CTRL), mac_on,
+                sizeof(mac_on), "MAC enable"))
+    return -1;
+  if (set_channel_domain(dev)) return -1;
+  return set_rate_txpower(dev, 1) || set_rate_txpower(dev, 2) ? -1 : 0;
 }
 
 /* mt7921_mcu_set_chan_info, 20 MHz only. */
@@ -134,6 +206,10 @@ int mt7902_monitor_start(mt7902_dev *dev, const mt7902_caps *caps,
   basic[12] = 1; /* conn_state */
   put_le16(basic + 20, MONITOR_WLAN_IDX); /* bmc_tx_wlan_idx */
   put_le16(basic + 26, MONITOR_WLAN_IDX); /* sta_idx */
+  /* phymode: B, G and GN on 2.4 GHz; A, AN and AC on 5 GHz. Then the basic
+   * non-HT PHY: ERP or OFDM. */
+  basic[25] = channel > 14 ? 0x31 : 0x0e;
+  put_le16(basic + 28, channel > 14 ? 3 : 1);
   if (cmd_acked(dev, MCU_UNI_CMD(MCU_UNI_CMD_BSS_INFO_UPDATE), bss_req,
                 sizeof(bss_req), "BSS info"))
     return -1;
@@ -148,6 +224,28 @@ int mt7902_monitor_start(mt7902_dev *dev, const mt7902_caps *caps,
   if (mt7902_set_channel(dev, caps, channel)) return -1;
   mt7902_wr(dev, MT_WF_RFCR, 0); /* drop nothing */
   return 0;
+}
+
+/* mt76_connac2_mac_write_txwi for a fixed-rate 802.11 frame on interface 0. */
+int mt7902_send_frame(mt7902_dev *dev, const uint8_t *frame, size_t len,
+                      uint16_t rate, int no_ack) {
+  if (len < 24) return -1;
+  uint8_t type = frame[0] >> 2 & 3, subtype = frame[0] >> 4;
+  int multicast = frame[4] & 1;
+  uint32_t hdr_len = type == 2 && (subtype & 8) ? 26 : 24; /* QoS data */
+  uint32_t w[8] = {0};
+  w[0] = (uint32_t)(len + 32) | 0u << 23 /* PKT_FMT cut-through */ |
+         0x10u << 25 /* Q_IDX ALTX0 */;
+  w[1] = BIT(31) /* long format */ | MONITOR_WLAN_IDX |
+         2u << 16 /* HDR_FORMAT 802.11 */ | (hdr_len / 2) << 11;
+  w[2] = BIT(31) /* FIX_RATE */ | BIT(13) /* HTC_VLD */ | type << 4 | subtype |
+         (multicast ? BIT(10) : 0);
+  w[3] = 15u << 11 /* REM_TX_COUNT */ | BIT(28) /* BA_DISABLE */ |
+         (no_ack ? BIT(0) : 0);
+  w[6] = BIT(2) /* FIXED_BW, 20 MHz */ | (uint32_t)rate << 16;
+  uint8_t txd[32];
+  memcpy(txd, w, sizeof(txd));
+  return mt7902_tx_frame(dev, txd, frame, len, NULL);
 }
 
 uint8_t mt7902_rx_type(const mt7902_rx *rx) {

@@ -1,6 +1,6 @@
 # Port do winawdl para a MediaTek MT7902
 
-Status: 2026-11-16. Fases 0 a 3 concluídas. A placa recebe quadros 802.11 em modo monitor a partir de um programa comum.
+Status: 2026-11-16. Fases 0 a 3 concluídas, fase 4 parcial. A placa recebe em modo monitor e transmite a 1 Mb/s. A transmissão em OFDM ainda não funciona.
 
 ## Registro de resultados
 
@@ -9,6 +9,15 @@ Status: 2026-11-16. Fases 0 a 3 concluídas. A placa recebe quadros 802.11 em mo
 | 2026-11-16 | 1 | Aprovada. `regproxy` ligado à placa com Secure Boot ligado (certificado local). `probes/mt7902_chipid` leu BAR de 1 MiB em `0xf820300000`, mapeado direto, `LPCTL 0x0` (driver dono do chip) e `chip id 0x7902`, revisão `0x0000` |
 | 2026-11-16 | 2 | Aprovada. `mt7902/fwboot` executou reset, anéis WFDMA por polling, patch (1 seção) e RAM (4 regiões, build 20251212032127). `MT_CONN_ON_MISC` passou de `0x0` para `0x3` (firmware pronto). DMA a partir de 512 páginas de 4 KiB abaixo de 4 GiB |
 | 2026-11-16 | 3 | Aprovada. `mt7902/rxtest` em modo sniffer: canal 6 com 97 a 180 quadros em 4 a 5 s (beacons, dados, quadros de ação AWDL de aparelhos Apple), canal 44 com 14 quadros, canal 149 com 1583 quadros. Primeiro quadro entre 16 e 266 ms. MAC lido do chip, 1 fluxo espacial, 2,4 e 5 GHz |
+| 2026-11-16 | 4 | Parcial. `mt7902/txtest` envia pedidos de sondagem em broadcast. A 1 Mb/s (CCK) no canal 6, 15 a 22 respostas de pontos de acesso vizinhos voltaram endereçadas ao MAC da placa, o que prova a transmissão no ar. A 6 Mb/s (OFDM), nos canais 6 e 157, nenhuma resposta |
+
+Observações da fase 4:
+
+- **Risco aberto, OFDM não sai no ar.** Com a mesma montagem de quadro, 1 Mb/s funciona e 6 Mb/s não, em 2,4 e em 5 GHz. A codificação da taxa confere com a do mt76 (`0x4b`). Já enviados sem efeito: domínio de canais (`SET_CHAN_DOMAIN`), tabela de potência por taxa (`SET_RATE_TX_POWER`) e modos de PHY no `BSS_INFO`. O AWDL usa OFDM, então a fase 5 depende disto.
+- O relatório de liberação de TX do firmware diz "entregue" para quadros que ninguém respondeu, então não serve de testemunha. Falta uma testemunha independente em 5 GHz. O MacBook em modo monitor serviria, mas isso derruba o Wi-Fi dele e a sessão SSH.
+- Quadros unicast com ACK pedido ficaram sem notificação de liberação no teste a 1 Mb/s. Não investigado.
+- **Comandos em rajada derrubam o firmware.** Vários comandos sem resposta seguidos (a tabela de potência são 8) fazem o firmware pedir parada de DMA, de forma determinística. O mt76 lê um registrador pelo firmware depois de cada um, e o porte faz o mesmo (`mcu_sync`). Isso pode estar ligado ao erro aleatório depois do boot.
+- Caminho de TX: anel 0, descritor de 32 bytes mais lista de páginas no buffer do anel, apontando para o quadro no mesmo buffer. O token é o índice do descritor.
 
 Observações da fase 3:
 
