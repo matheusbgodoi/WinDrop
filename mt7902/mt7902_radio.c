@@ -10,7 +10,7 @@
 #define MONITOR_WLAN_IDX 19 /* MT792x_WTBL_RESERVED, for interface 0 */
 #define CONNECTION_INFRA_AP 0x10002u
 
-#define log_err(...) fprintf(stderr, "mt7902: " __VA_ARGS__)
+#define log_err(...) printf("mt7902: " __VA_ARGS__)
 
 static uint32_t get_le32(const uint8_t *p) {
   uint32_t v;

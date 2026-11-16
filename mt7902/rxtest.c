@@ -25,12 +25,10 @@ int main(int argc, char **argv) {
   mt7902_trace = argc > 5;
 
   mt7902_dev dev;
-  if (mt7902_open(&dev)) return 2;
+  if (mt7902_start(&dev, argv[1], argv[2])) return 2;
   int rc = 1;
   mt7902_caps caps;
-  if (mt7902_bringup(&dev) || mt7902_load_firmware(&dev, argv[1], argv[2]) ||
-      mt7902_radio_init(&dev, &caps))
-    goto out;
+  if (mt7902_radio_init(&dev, &caps)) goto out;
   printf("MAC %02x:%02x:%02x:%02x:%02x:%02x, %u streams, 2.4 GHz %u, 5 GHz %u\n",
          caps.mac[0], caps.mac[1], caps.mac[2], caps.mac[3], caps.mac[4],
          caps.mac[5], caps.nss, caps.has_2ghz, caps.has_5ghz);

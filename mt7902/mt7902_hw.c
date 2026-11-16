@@ -23,7 +23,7 @@
 #define MCU_RXD_BYTES 36
 #define MCU_RXD_SEQ_OFFSET 29
 
-#define log_err(...) fprintf(stderr, "mt7902: " __VA_ARGS__)
+#define log_err(...) printf("mt7902: " __VA_ARGS__)
 
 int mt7902_trace;
 
@@ -309,6 +309,8 @@ void mt7902_close(mt7902_dev *dev) {
       dev->io_failed = 0;
       if (dma_stop(dev)) log_err("DMA still busy at close\n");
       dma_logic_reset(dev);
+      /* Leaves no firmware running, as mt7921e_unregister_device does. */
+      wfsys_reset(dev);
     }
     CloseHandle(dev->proxy);
   }
@@ -682,5 +684,27 @@ int mt7902_load_firmware(mt7902_dev *dev, const char *patch_path,
             mt7902_rr(dev, MT_CONN_ON_MISC));
     return -1;
   }
+  /* In about half the boots on the one card this ran on, the firmware asks
+   * for a DMA stop within this time and turns WFDMA off, with no command
+   * sent. The cause is unknown; mt7902_start boots again when it happens. */
+  Sleep(300);
+  if (raw_rr(dev, MT_MCU_CMD) & MT_MCU_CMD_STOP_DMA) return -2;
   return 0;
+}
+
+int mt7902_start(mt7902_dev *dev, const char *patch_path,
+                 const char *ram_path) {
+  for (int attempt = 1; attempt <= 8; attempt++) {
+    if (mt7902_open(dev)) return -1;
+    int rc = mt7902_bringup(dev);
+    if (!rc) rc = mt7902_load_firmware(dev, patch_path, ram_path);
+    if (!rc) {
+      if (attempt > 1) printf("mt7902: firmware up on attempt %d\n", attempt);
+      return 0;
+    }
+    mt7902_close(dev);
+    if (rc != -2) return -1;
+  }
+  log_err("firmware asked for a DMA stop on every boot attempt\n");
+  return -1;
 }

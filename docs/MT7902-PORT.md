@@ -1,6 +1,6 @@
 # Port do winawdl para a MediaTek MT7902
 
-Status: 2026-11-16. Fases 0, 1 e 2 concluídas. O firmware roda na placa a partir de um programa comum.
+Status: 2026-11-16. Fases 0 a 3 concluídas. A placa recebe quadros 802.11 em modo monitor a partir de um programa comum.
 
 ## Registro de resultados
 
@@ -8,6 +8,15 @@ Status: 2026-11-16. Fases 0, 1 e 2 concluídas. O firmware roda na placa a parti
 |---|---|---|
 | 2026-11-16 | 1 | Aprovada. `regproxy` ligado à placa com Secure Boot ligado (certificado local). `probes/mt7902_chipid` leu BAR de 1 MiB em `0xf820300000`, mapeado direto, `LPCTL 0x0` (driver dono do chip) e `chip id 0x7902`, revisão `0x0000` |
 | 2026-11-16 | 2 | Aprovada. `mt7902/fwboot` executou reset, anéis WFDMA por polling, patch (1 seção) e RAM (4 regiões, build 20251212032127). `MT_CONN_ON_MISC` passou de `0x0` para `0x3` (firmware pronto). DMA a partir de 512 páginas de 4 KiB abaixo de 4 GiB |
+| 2026-11-16 | 3 | Aprovada. `mt7902/rxtest` em modo sniffer: canal 6 com 97 a 180 quadros em 4 a 5 s (beacons, dados, quadros de ação AWDL de aparelhos Apple), canal 44 com 14 quadros, canal 149 com 1583 quadros. Primeiro quadro entre 16 e 266 ms. MAC lido do chip, 1 fluxo espacial, 2,4 e 5 GHz |
+
+Observações da fase 3:
+
+- **Risco aberto, boot instável.** Em cerca de metade dos boots o firmware pede parada de DMA (`MT_MCU_CMD = STOP_DMA`, bit 29 em `HOST_INT_STA`) até 300 ms depois de iniciar e desliga o WFDMA, sem nenhum comando enviado. Não depende de desligamento limpo nem da execução anterior. Causa desconhecida. `mt7902_start` refaz o boot quando isso acontece: 10 de 10 execuções subiram em até 4 tentativas. O protocolo de recuperação (`MT_MCU_INT_EVENT`) existe no hardware e não foi implementado.
+- No canal 6 parte dos buffers do anel de dados não tem um descritor de recepção válido no início (57 em 154 numa captura). Hipótese: quadros que ocupam mais de um buffer. Não acontece nos canais de 5 GHz testados. A investigar antes da fase 5.
+- O firmware reporta 1 fluxo espacial para esta placa.
+- Sequência mínima depois do boot: consulta de capacidades, modo EFUSE, MAC ligado, canal (`SET_RX_PATH`), `DEV_INFO`, `BSS_INFO`, sniffer ligado, configuração do sniffer, `CHANNEL_SWITCH`, filtro de recepção zerado.
+- Testes sem um UAC por execução: `scripts/system-runner.ps1 -Install` cria uma tarefa SYSTEM temporária que só executa programas de `mt7902/build`. Remover com `-Remove` ao fim da sessão.
 
 Observações da fase 2:
 

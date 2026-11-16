@@ -48,6 +48,11 @@ int mt7902_bringup(mt7902_dev *dev);
 int mt7902_load_firmware(mt7902_dev *dev, const char *patch_path,
                          const char *ram_path);
 
+/* Opens the device, brings it up and loads the firmware, booting again when
+ * the firmware comes up asking for a DMA stop. On failure the device is
+ * closed. */
+int mt7902_start(mt7902_dev *dev, const char *patch_path, const char *ram_path);
+
 /* Sends one MCU command; `cmd` is an id from mt7902_regs.h, built with the
  * MCU_EXT_CMD, MCU_CE_CMD or MCU_UNI_CMD macros where it is not a plain one.
  * With `response`, waits for the event carrying the same sequence number and
