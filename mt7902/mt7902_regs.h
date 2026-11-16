@@ -27,6 +27,9 @@
 #define MT_TOP_MISC_FW_STATE 0x7u
 #define MT_TOP_MISC2_FW_PWR_ON BIT(0)
 #define MT_TOP_MISC2_FW_N9_RDY 0x3u
+/* Firmware operating mode, read by the firmware as it starts. */
+#define MT_SWDEF_MODE 0x41f23cu
+#define MT_SWDEF_NORMAL_MODE 0
 #define MT_WFDMA_DUMMY_CR 0x54000120u
 #define MT_WFDMA_NEED_REINIT BIT(1)
 #define MT_DMASHDL_SW_CONTROL 0x7c026004u
@@ -97,7 +100,46 @@
 #define MCU_CMD_PATCH_SEM_CONTROL 0x10
 #define MCU_CMD_FW_SCATTER 0xee
 #define MCU_PKT_ID 0xa0
+#define MCU_Q_QUERY 0
+#define MCU_Q_SET 1
 #define MCU_Q_NA 3
+#define MCU_CMD_UNI_EXT_ACK 0x7
+
+/* Command encoding, as mt76's __MCU_CMD_FIELD_*: id, then ext id, then flags */
+#define MCU_CMD_FIELD_QUERY BIT(16)
+#define MCU_CMD_FIELD_UNI BIT(17)
+#define MCU_CMD_FIELD_CE BIT(18)
+#define MCU_EXT_CMD(ext) (0xedu | (uint32_t)(ext) << 8)
+#define MCU_CE_CMD(id) ((id) | MCU_CMD_FIELD_CE)
+#define MCU_UNI_CMD(id) ((id) | MCU_CMD_FIELD_UNI)
+
+#define MCU_EXT_CMD_CHANNEL_SWITCH 0x08
+#define MCU_EXT_CMD_EFUSE_BUFFER_MODE 0x21
+#define MCU_EXT_CMD_MAC_INIT_CTRL 0x46
+#define MCU_EXT_CMD_SET_RX_PATH 0x4e
+#define MCU_CE_CMD_GET_NIC_CAPAB 0x8a
+#define MCU_UNI_CMD_DEV_INFO_UPDATE 0x01
+#define MCU_UNI_CMD_BSS_INFO_UPDATE 0x02
+#define MCU_UNI_CMD_SNIFFER 0x24
+
+/* Receive path */
+#define MT_MDP_DCR0 0x820cd000u
+#define MT_MDP_DCR0_DAMSDU_EN BIT(15)
+#define MT_MDP_DCR0_RX_HDR_TRANS_EN BIT(19)
+#define MT_WF_RFCR 0x820e5000u /* band 0 */
+#define MT_RXD0_LENGTH_MASK 0xffffu
+#define MT_RXD0_PKT_TYPE_SHIFT 27
+#define MT_RXD1_NORMAL_GROUP_1 BIT(11)
+#define MT_RXD1_NORMAL_GROUP_2 BIT(12)
+#define MT_RXD1_NORMAL_GROUP_3 BIT(13)
+#define MT_RXD1_NORMAL_GROUP_4 BIT(14)
+#define MT_RXD1_NORMAL_GROUP_5 BIT(15)
+#define MT_RXD1_NORMAL_FCS_ERR BIT(27)
+#define MT_RXD2_NORMAL_HDR_TRANS BIT(13)
+#define MT_RXD2_NORMAL_HDR_OFFSET_SHIFT 14
+#define MT_RXD3_NORMAL_CH_FREQ_SHIFT 8
+#define PKT_TYPE_NORMAL 2
+#define PKT_TYPE_RX_EVENT 7
 #define MCU_PATCH_ADDRESS 0x200000u
 
 #define PATCH_SEM_RELEASE 0

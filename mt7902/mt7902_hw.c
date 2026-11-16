@@ -19,10 +19,13 @@
 #define DMA_ADDRESS_BITS 32
 
 #define MCU_TXD_BYTES 64
+#define MCU_UNI_TXD_BYTES 48
 #define MCU_RXD_BYTES 36
 #define MCU_RXD_SEQ_OFFSET 29
 
 #define log_err(...) fprintf(stderr, "mt7902: " __VA_ARGS__)
+
+int mt7902_trace;
 
 /* ---- registers ---- */
 
@@ -405,42 +408,82 @@ static uint32_t get_be32(const uint8_t *p) {
   return (uint32_t)p[0] << 24 | (uint32_t)p[1] << 16 | (uint32_t)p[2] << 8 | p[3];
 }
 
-int mt7902_mcu_cmd(mt7902_dev *dev, uint8_t cid, const void *payload,
+int mt7902_mcu_cmd(mt7902_dev *dev, uint32_t cmd, const void *payload,
                    size_t len, uint8_t *response, size_t response_cap) {
+  uint8_t cid = cmd & 0xff, ext_cid = cmd >> 8 & 0xff;
   uint8_t seq = ++dev->mcu_seq & 0xf;
   if (!seq) seq = ++dev->mcu_seq & 0xf;
 
-  if (cid == MCU_CMD_FW_SCATTER) /* raw data on its own ring, no header */
+  if (cmd == MCU_CMD_FW_SCATTER) /* raw data on its own ring, no header */
     return tx_send(dev, &dev->tx_fwdl, NULL, 0, payload, len);
 
-  /* struct mt76_connac2_mcu_txd, filled as mt76_connac2_mcu_fill_message */
+  /* struct mt76_connac2_mcu_txd or mt76_connac2_mcu_uni_txd, filled as
+   * mt76_connac2_mcu_fill_message does. Both keep seq at byte 39. */
   uint8_t txd[MCU_TXD_BYTES] = {0};
-  size_t total = sizeof(txd) + len;
+  size_t txd_len = cmd & MCU_CMD_FIELD_UNI ? MCU_UNI_TXD_BYTES : MCU_TXD_BYTES;
+  size_t total = txd_len + len;
   put_le32(txd + 0, (uint32_t)total | 2u << 23 /* PKT_FMT cmd */ |
                         0x20u << 25 /* Q_IDX MCU_PORT_RX_Q0 */);
   put_le32(txd + 4, BIT(31) /* long format */ | 1u << 16 /* HDR_FORMAT cmd */);
   put_le16(txd + 32, (uint16_t)(total - 32));
-  put_le16(txd + 34, 1u << 15 | 0x20u << 10); /* pq_id: MCU port, RX_Q0 */
-  txd[36] = cid;
   txd[37] = MCU_PKT_ID;
-  txd[38] = MCU_Q_NA;
   txd[39] = seq;
-  if (tx_send(dev, &dev->tx_mcu, txd, sizeof(txd), payload, len)) return -1;
+  if (cmd & MCU_CMD_FIELD_UNI) {
+    put_le16(txd + 34, cid);
+    txd[43] = MCU_CMD_UNI_EXT_ACK; /* option; s2d_index stays host-to-N9 */
+  } else {
+    put_le16(txd + 34, 1u << 15 | 0x20u << 10); /* pq_id: MCU port, RX_Q0 */
+    txd[36] = cid;
+    txd[41] = ext_cid;
+    if (ext_cid || (cmd & MCU_CMD_FIELD_CE)) {
+      txd[38] = cmd & MCU_CMD_FIELD_QUERY ? MCU_Q_QUERY : MCU_Q_SET;
+      txd[43] = ext_cid != 0; /* ext_cid_ack */
+    } else {
+      txd[38] = MCU_Q_NA;
+    }
+  }
+  if (mt7902_trace)
+    printf("cmd 0x%05x seq %u sent with INT_STA 0x%08x, MCU_CMD 0x%08x\n",
+           cmd, seq, raw_rr(dev, MT_WFDMA0_HOST_INT_STA), raw_rr(dev, MT_MCU_CMD));
+  if (tx_send(dev, &dev->tx_mcu, txd, txd_len, payload, len)) return -1;
   if (!response) return 0;
 
   uint64_t deadline = now_ms() + 3000;
+  mt7902_ring *rings[] = {&dev->rx_event, &dev->rx_data};
   for (;;) {
-    mt7902_rx rx;
-    if (mt7902_rx_poll(dev, &dev->rx_event, &rx)) {
-      if (rx.len > MCU_RXD_SEQ_OFFSET && rx.data[MCU_RXD_SEQ_OFFSET] == seq) {
+    int got = 0;
+    for (int r = 0; r < 2; r++) {
+      mt7902_rx rx;
+      if (!mt7902_rx_poll(dev, rings[r], &rx)) continue;
+      got = 1;
+      if (mt7902_trace) {
+        printf("cmd 0x%05x seq %u, ring %d, %u bytes:", cmd, seq, r, rx.len);
+        for (uint32_t i = 0; i < rx.len && i < 48; i++)
+          printf("%s%02x", i % 4 ? "" : " ", rx.data[i]);
+        printf("\n");
+      }
+      /* Events only: a received frame could carry the same byte by chance. */
+      if (rx.len > MCU_RXD_SEQ_OFFSET && rx.data[3] >> 3 == PKT_TYPE_RX_EVENT &&
+          rx.data[MCU_RXD_SEQ_OFFSET] == seq) {
         size_t n = rx.len < response_cap ? rx.len : response_cap;
         memcpy(response, rx.data, n);
         return (int)n;
       }
-      continue; /* an unsolicited event */
     }
+    if (got) continue;
     if (dev->io_failed || now_ms() > deadline) {
-      log_err("command 0x%02x (seq %u) got no response\n", cid, seq);
+      log_err("command 0x%05x (seq %u) got no response; INT_STA 0x%08x, "
+              "MCU_CMD 0x%08x, event ring cpu %u dma %u\n",
+              cmd, seq, raw_rr(dev, MT_WFDMA0_HOST_INT_STA),
+              raw_rr(dev, MT_MCU_CMD),
+              raw_rr(dev, dev->rx_event.regs + MT_RING_CPU_IDX),
+              raw_rr(dev, dev->rx_event.regs + MT_RING_DMA_IDX));
+      log_err("  LPCTL 0x%x, MISC 0x%x, GLO_CFG 0x%08x, DUMMY_CR 0x%x, cmd ring "
+              "cpu %u dma %u\n",
+              mt7902_rr(dev, MT_CONN_ON_LPCTL), mt7902_rr(dev, MT_CONN_ON_MISC),
+              raw_rr(dev, MT_WFDMA0_GLO_CFG), mt7902_rr(dev, MT_WFDMA_DUMMY_CR),
+              raw_rr(dev, dev->tx_mcu.regs + MT_RING_CPU_IDX),
+              raw_rr(dev, dev->tx_mcu.regs + MT_RING_DMA_IDX));
       return -1;
     }
     SwitchToThread();
@@ -448,7 +491,7 @@ int mt7902_mcu_cmd(mt7902_dev *dev, uint8_t cid, const void *payload,
 }
 
 /* The status byte of patch semaphore and patch finish responses. */
-static int mcu_cmd_status(mt7902_dev *dev, uint8_t cid, const void *payload,
+static int mcu_cmd_status(mt7902_dev *dev, uint32_t cid, const void *payload,
                           size_t len) {
   uint8_t rsp[64];
   int n = mt7902_mcu_cmd(dev, cid, payload, len, rsp, sizeof(rsp));
@@ -456,7 +499,7 @@ static int mcu_cmd_status(mt7902_dev *dev, uint8_t cid, const void *payload,
   return rsp[MCU_RXD_BYTES - 4];
 }
 
-static int mcu_cmd_acked(mt7902_dev *dev, uint8_t cid, const void *payload,
+static int mcu_cmd_acked(mt7902_dev *dev, uint32_t cid, const void *payload,
                          size_t len) {
   uint8_t rsp[64];
   return mt7902_mcu_cmd(dev, cid, payload, len, rsp, sizeof(rsp)) < 0 ? -1 : 0;
@@ -621,6 +664,8 @@ out:
 
 int mt7902_load_firmware(mt7902_dev *dev, const char *patch_path,
                          const char *ram_path) {
+  /* Must be in place before the download: mt7921 __mt7921_init_hardware. */
+  mt7902_wr(dev, MT_SWDEF_MODE, MT_SWDEF_NORMAL_MODE);
   uint8_t restart[4] = {1}; /* power_mode */
   if (mt7902_mcu_cmd(dev, MCU_CMD_NIC_POWER_CTRL, restart, sizeof(restart),
                      NULL, 0))

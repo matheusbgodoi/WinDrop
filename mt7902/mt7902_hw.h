@@ -31,6 +31,9 @@ typedef struct mt7902_rx {
   uint32_t len;
 } mt7902_rx;
 
+/* Nonzero prints every MCU event as it arrives. */
+extern int mt7902_trace;
+
 int mt7902_open(mt7902_dev *dev);
 /* Stops DMA and releases everything. Safe on a partly opened device. */
 void mt7902_close(mt7902_dev *dev);
@@ -45,10 +48,12 @@ int mt7902_bringup(mt7902_dev *dev);
 int mt7902_load_firmware(mt7902_dev *dev, const char *patch_path,
                          const char *ram_path);
 
-/* Sends one MCU command. With `response`, waits for the event carrying the
- * same sequence number and copies up to `response_cap` bytes of it, MCU
- * header included; returns its length, or a negative value on failure. */
-int mt7902_mcu_cmd(mt7902_dev *dev, uint8_t cid, const void *payload,
+/* Sends one MCU command; `cmd` is an id from mt7902_regs.h, built with the
+ * MCU_EXT_CMD, MCU_CE_CMD or MCU_UNI_CMD macros where it is not a plain one.
+ * With `response`, waits for the event carrying the same sequence number and
+ * copies up to `response_cap` bytes of it, MCU header included; returns its
+ * length, or a negative value on failure. */
+int mt7902_mcu_cmd(mt7902_dev *dev, uint32_t cmd, const void *payload,
                    size_t len, uint8_t *response, size_t response_cap);
 /* Returns 1 with a frame, 0 when the ring is empty. */
 int mt7902_rx_poll(mt7902_dev *dev, mt7902_ring *ring, mt7902_rx *out);
