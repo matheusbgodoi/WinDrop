@@ -37,6 +37,10 @@ int mt7902_set_channel(mt7902_dev *dev, const mt7902_caps *caps,
 #define MT7902_RATE_OFDM_12M 0x04a
 #define MT7902_RATE_OFDM_24M 0x049
 
+/* Spatial extension index of transmitted frames: 24 duplicates the stream on
+ * both antennas, 0 sends on the first one alone. */
+extern uint32_t mt7902_tx_spe;
+
 /* Queues an 802.11 frame, header included and FCS excluded, at a fixed rate.
  * `no_ack` is for group-addressed frames and whatever needs no retry. */
 int mt7902_send_frame(mt7902_dev *dev, const uint8_t *frame, size_t len,

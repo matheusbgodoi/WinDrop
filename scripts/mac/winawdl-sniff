@@ -1,0 +1,38 @@
+#!/bin/bash
+# Captures 802.11 frames to or from one station, in monitor mode, for a fixed
+# time, then gives the Wi-Fi back. Runs as root through a sudoers rule that
+# allows this script alone, so every argument is checked and every path fixed.
+#   winawdl-sniff <channel> <seconds, 1 to 60> <station mac>
+# The Mac is off its network while this runs. Whatever happens, the exit trap
+# power-cycles the Wi-Fi, which makes macOS rejoin its usual network.
+set -u
+PATH=/usr/bin:/bin:/usr/sbin:/sbin
+home=/usr/local/winawdl
+out=$home/capture/last.pcap
+
+[[ $# -eq 3 ]] || exit 2
+channel=$1 seconds=$2 mac=$3
+[[ $channel =~ ^[0-9]{1,3}$ && $seconds =~ ^[0-9]{1,2}$ ]] || exit 2
+[[ $mac =~ ^([0-9a-f]{2}:){5}[0-9a-f]{2}$ ]] || exit 2
+((seconds >= 1 && seconds <= 60)) || exit 2
+
+restore() {
+  [[ -n ${pid:-} ]] && kill "$pid" 2>/dev/null
+  networksetup -setairportpower en0 off
+  sleep 1
+  networksetup -setairportpower en0 on
+}
+trap restore EXIT
+trap 'exit 1' HUP INT TERM
+
+rm -f "$out"
+"$home/winawdl-chan" "$channel" || exit 3
+tcpdump -I -i en0 -w "$out" "wlan addr1 $mac or wlan addr2 $mac" 2>/dev/null &
+pid=$!
+sleep 1
+"$home/winawdl-chan" "$channel"
+sleep "$seconds"
+kill "$pid" 2>/dev/null
+wait "$pid" 2>/dev/null
+pid=
+chmod 644 "$out" 2>/dev/null

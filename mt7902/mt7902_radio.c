@@ -150,6 +150,17 @@ int mt7902_radio_init(mt7902_dev *dev, mt7902_caps *caps) {
                 sizeof(mac_on), "MAC enable"))
     return -1;
   if (set_channel_domain(dev)) return -1;
+
+  /* mt792x_mac_init: transmit duration limit, then RTS only for frames past
+   * 0x92b bytes (mt76_connac_mcu_set_rts_thresh). */
+  uint32_t ctcr0 = mt7902_rr(dev, MT_TMAC_CTCR0);
+  mt7902_wr(dev, MT_TMAC_CTCR0, (ctcr0 & ~0x3fu) | 0x3f | BIT(17) | BIT(18));
+  uint8_t rts[12] = {1 /* prot_idx */, 0 /* band */};
+  put_le32(rts + 4, 0x92b); /* len_thresh */
+  put_le32(rts + 8, 2);     /* pkt_thresh */
+  if (cmd_acked(dev, MCU_EXT_CMD(MCU_EXT_CMD_PROTECT_CTRL), rts, sizeof(rts),
+                "RTS threshold"))
+    return -1;
   return set_rate_txpower(dev, 1) || set_rate_txpower(dev, 2) ? -1 : 0;
 }
 
@@ -227,6 +238,8 @@ int mt7902_monitor_start(mt7902_dev *dev, const mt7902_caps *caps,
 }
 
 /* mt76_connac2_mac_write_txwi for a fixed-rate 802.11 frame on interface 0. */
+uint32_t mt7902_tx_spe = 24;
+
 int mt7902_send_frame(mt7902_dev *dev, const uint8_t *frame, size_t len,
                       uint16_t rate, int no_ack) {
   if (len < 24) return -1;
@@ -243,6 +256,9 @@ int mt7902_send_frame(mt7902_dev *dev, const uint8_t *frame, size_t len,
   w[3] = 15u << 11 /* REM_TX_COUNT */ | BIT(28) /* BA_DISABLE */ |
          (no_ack ? BIT(0) : 0);
   w[6] = BIT(2) /* FIXED_BW, 20 MHz */ | (uint32_t)rate << 16;
+  /* Frame type again, where the PCIe TXD carries it, and the spatial
+   * extension index mt76 gives fixed-rate frames on a two-antenna card. */
+  w[7] = (uint32_t)type << 20 | (uint32_t)subtype << 16 | mt7902_tx_spe << 11;
   uint8_t txd[32];
   memcpy(txd, w, sizeof(txd));
   return mt7902_tx_frame(dev, txd, frame, len, NULL);

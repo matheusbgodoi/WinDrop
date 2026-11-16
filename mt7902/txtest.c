@@ -2,7 +2,8 @@
 /* Phase 4 test: sends broadcast probe requests from the MT7902 and counts
  * the probe responses that access points address back to it. An answer is
  * proof, from a third party, that the frames went on air.
- *   txtest <patch.bin> <ram.bin> <channel> <probes> <cck|ofdm> [bssid]
+ *   txtest <patch.bin> <ram.bin> <channel> <probes> <cck|ofdm>[-wf0] [bssid]
+ * The -wf0 suffix sends on the first antenna alone instead of both.
  * With a BSSID the probes are addressed to that access point and need its
  * acknowledgement, which the firmware reports back per frame: that tells
  * whether a frame was heard even when nothing answers it. */
@@ -36,7 +37,7 @@ int main(int argc, char **argv) {
   }
   uint8_t channel = (uint8_t)atoi(argv[3]);
   unsigned probes = argc > 4 ? (unsigned)atoi(argv[4]) : 30;
-  int ofdm = argc > 5 && !strcmp(argv[5], "ofdm");
+  int ofdm = argc > 5 && !strncmp(argv[5], "ofdm", 4);
   uint8_t target[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
   int unicast = 0;
   if (argc > 6) {
@@ -47,6 +48,8 @@ int main(int argc, char **argv) {
     for (int i = 0; i < 6; i++) target[i] = (uint8_t)b[i];
     unicast = 1;
   }
+
+  if (argc > 5 && strstr(argv[5], "-wf0")) mt7902_tx_spe = 0;
 
   mt7902_dev dev;
   if (mt7902_start(&dev, argv[1], argv[2])) return 2;
