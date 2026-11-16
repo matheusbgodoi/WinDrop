@@ -1,6 +1,18 @@
 # Port do winawdl para a MediaTek MT7902
 
-Status: 2026-11-16. Fase 0 (viabilidade) concluída no papel. Nada foi executado no hardware ainda.
+Status: 2026-11-16. Fases 0 e 1 concluídas. O driver UMDF está ligado à placa e o chip responde.
+
+## Registro de resultados
+
+| Data | Fase | Resultado |
+|---|---|---|
+| 2026-11-16 | 1 | Aprovada. `regproxy` ligado à placa com Secure Boot ligado (certificado local). `probes/mt7902_chipid` leu BAR de 1 MiB em `0xf820300000`, mapeado direto, `LPCTL 0x0` (driver dono do chip) e `chip id 0x7902`, revisão `0x0000` |
+
+Observações da fase 1:
+
+- A placa expõe duas regiões de memória. O driver escolhe a primeira com 1 MiB ou mais.
+- O BAR fica acima de 4 GiB, o que não importa para registradores.
+- Para voltar ao driver da MediaTek: `scripts/uninstall-driver.ps1` em shell elevado.
 
 ## Objetivo
 
