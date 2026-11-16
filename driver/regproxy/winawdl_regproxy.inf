@@ -1,5 +1,5 @@
 ; SPDX-License-Identifier: MIT
-; User-mode register proxy for the Realtek RTL8852CE. Matches only the generic
+; User-mode register proxy for the MediaTek MT7902. Matches only the generic
 ; device ID, which ranks below the vendor's, so adding it takes over nothing.
 
 [Version]
@@ -22,7 +22,7 @@ HKR,,Icon,,"-5"
 %Provider% = Models, NTamd64.10.0...19041
 
 [Models.NTamd64.10.0...19041]
-%DeviceDesc% = RegProxy, PCI\VEN_10EC&DEV_C852
+%DeviceDesc% = RegProxy, PCI\VEN_14C3&DEV_7902
 
 [SourceDisksNames]
 1 = %DiskName%
@@ -67,5 +67,5 @@ ServiceBinary      = %13%\winawdl_regproxy.dll
 [Strings]
 Provider   = "winawdl project"
 ClassName  = "winawdl user-space radios"
-DeviceDesc = "RTL8852CE user-space register proxy (winawdl)"
+DeviceDesc = "MT7902 user-space register proxy (winawdl)"
 DiskName   = "winawdl register proxy"

@@ -8,7 +8,7 @@ $DriverSettings = @{
   PackageFiles = @('winawdl_regproxy.inf', 'winawdl_regproxy.dll')
   CertSubject  = 'CN=winawdl driver signing (local test)'
   CertFile     = 'winawdl-signing.cer'
-  HardwareId   = 'PCI\VEN_10EC&DEV_C852'
+  HardwareId   = 'PCI\VEN_14C3&DEV_7902'
   TrustStores  = @('Root', 'TrustedPublisher')
 }
 

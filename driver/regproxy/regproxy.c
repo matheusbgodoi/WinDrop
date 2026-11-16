@@ -10,8 +10,8 @@
 #include <ntstatus.h>
 #include <wdf.h>
 
-/* The 8852CE register window (BAR2) is 1 MiB; smaller resources are not it. */
-#define MIN_BAR_LEN 0x10000u
+/* The MT7902 register window (BAR0) reaches 0xfe24c; smaller resources are not it. */
+#define MIN_BAR_LEN 0x100000u
 
 typedef struct _DEVICE_CONTEXT {
   PVOID bar; /* pseudo base address, only valid for the WDF register macros */
