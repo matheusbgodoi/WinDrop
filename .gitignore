@@ -14,3 +14,5 @@ deps/wintun/
 reports/
 research_notes/
 ref/
+mt7902/build/
+probes/build/

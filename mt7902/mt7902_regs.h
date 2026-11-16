@@ -1,0 +1,127 @@
+/* SPDX-License-Identifier: BSD-3-Clause-Clear */
+/* MT7902 register offsets and bits, taken from mt76 (mt792x_regs.h,
+ * mt7921/regs.h, dma.h, mt76_connac_mcu.h). Offsets below 0x100000 are final
+ * BAR0 offsets; chip addresses above that go through mt7902_reg_addr(). */
+#pragma once
+
+#define BIT(n) (1u << (n))
+
+/* Address remap */
+#define MT_HIF_REMAP_L1 0xfe24cu
+#define MT_HIF_REMAP_BASE_L1 0x40000u
+
+/* Chip addresses (remapped on access) */
+#define MT_HW_CHIPID 0x70010200u
+#define MT_HW_REV 0x70010204u
+#define MT_WFSYS_SW_RST_B 0x18000140u
+#define WFSYS_SW_RST_B BIT(0)
+#define WFSYS_SW_INIT_DONE BIT(4)
+#define MT_TOP_LPCR_HOST_BAND0 0x18060010u
+#define MT_TOP_LPCR_HOST_FW_OWN BIT(0)
+#define MT_TOP_LPCR_HOST_DRV_OWN BIT(1)
+#define MT_CONN_ON_LPCTL 0x7c060010u
+#define PCIE_LPCR_HOST_SET_OWN BIT(0)
+#define PCIE_LPCR_HOST_CLR_OWN BIT(1)
+#define PCIE_LPCR_HOST_OWN_SYNC BIT(2)
+#define MT_CONN_ON_MISC 0x7c0600f0u
+#define MT_TOP_MISC_FW_STATE 0x7u
+#define MT_TOP_MISC2_FW_PWR_ON BIT(0)
+#define MT_TOP_MISC2_FW_N9_RDY 0x3u
+#define MT_WFDMA_DUMMY_CR 0x54000120u
+#define MT_WFDMA_NEED_REINIT BIT(1)
+#define MT_DMASHDL_SW_CONTROL 0x7c026004u
+#define MT_DMASHDL_DMASHDL_BYPASS BIT(28)
+
+/* PCIe MAC */
+#define MT_PCIE_MAC_INT_ENABLE 0x10188u
+#define MT_PCIE_MAC_PM 0x10194u
+#define MT_PCIE_MAC_PM_L0S_DIS BIT(8)
+
+/* WFDMA0 */
+#define MT_WFDMA0(ofs) (0xd4000u + (ofs))
+#define MT_WFDMA0_RST MT_WFDMA0(0x100)
+#define MT_WFDMA0_RST_LOGIC_RST BIT(4)
+#define MT_WFDMA0_RST_DMASHDL_ALL_RST BIT(5)
+#define MT_MCU_CMD MT_WFDMA0(0x1f0)
+#define MT_WFDMA0_HOST_INT_STA MT_WFDMA0(0x200)
+#define MT_WFDMA0_HOST_INT_ENA MT_WFDMA0(0x204)
+#define MT_WFDMA0_GLO_CFG MT_WFDMA0(0x208)
+#define MT_WFDMA0_GLO_CFG_TX_DMA_EN BIT(0)
+#define MT_WFDMA0_GLO_CFG_TX_DMA_BUSY BIT(1)
+#define MT_WFDMA0_GLO_CFG_RX_DMA_EN BIT(2)
+#define MT_WFDMA0_GLO_CFG_RX_DMA_BUSY BIT(3)
+#define MT_WFDMA0_GLO_CFG_DMA_SIZE_3 (3u << 4)
+#define MT_WFDMA0_GLO_CFG_TX_WB_DDONE BIT(6)
+#define MT_WFDMA0_GLO_CFG_FIFO_DIS_CHECK BIT(11)
+#define MT_WFDMA0_GLO_CFG_FIFO_LITTLE_ENDIAN BIT(12)
+#define MT_WFDMA0_GLO_CFG_RX_WB_DDONE BIT(13)
+#define MT_WFDMA0_GLO_CFG_CSR_DISP_BASE_PTR_CHAIN_EN BIT(15)
+#define MT_WFDMA0_GLO_CFG_OMIT_RX_INFO_PFET2 BIT(21)
+#define MT_WFDMA0_GLO_CFG_OMIT_RX_INFO BIT(27)
+#define MT_WFDMA0_GLO_CFG_OMIT_TX_INFO BIT(28)
+#define MT_WFDMA0_GLO_CFG_CLK_GAT_DIS BIT(30)
+#define MT_WFDMA0_RST_DTX_PTR MT_WFDMA0(0x20c)
+#define MT_WFDMA0_GLO_CFG_EXT0 MT_WFDMA0(0x2b0)
+#define MT_WFDMA0_GLO_CFG_EXT0_CSR_TX_DMASHDL_EN BIT(6)
+#define MT_WFDMA0_PRI_DLY_INT_CFG0 MT_WFDMA0(0x2f0)
+#define MT_WFDMA0_TX_RING_EXT_CTRL(n) MT_WFDMA0(0x600 + 4 * (n))
+#define MT_WFDMA0_RX_RING_EXT_CTRL(n) MT_WFDMA0(0x680 + 4 * (n))
+
+/* Ring register blocks: desc_base, ring_size, cpu_idx, dma_idx. */
+#define MT_TX_RING(n) MT_WFDMA0(0x300 + 0x10 * (n))
+#define MT_RX_RING(n) MT_WFDMA0(0x500 + 0x10 * (n))
+#define MT_RING_DESC_BASE 0x0u
+#define MT_RING_SIZE_REG 0x4u
+#define MT_RING_CPU_IDX 0x8u
+#define MT_RING_DMA_IDX 0xcu
+
+/* MT7902 ring numbers (mt7921/mt7921.h, mt7921_dma_init) */
+#define MT7902_TXQ_DATA 0
+#define MT7902_TXQ_MCU_WM 15
+#define MT7902_TXQ_FWDL 16
+#define MT7902_RXQ_EVENT 0 /* MCU events and TX done */
+#define MT7902_RXQ_DATA 2
+
+/* DMA descriptor control word */
+#define MT_DMA_CTL_SD_LEN0_SHIFT 16
+#define MT_DMA_CTL_SD_LEN0_MASK 0x3fffu
+#define MT_DMA_CTL_LAST_SEC0 BIT(30)
+#define MT_DMA_CTL_DMA_DONE BIT(31)
+
+/* MCU commands */
+#define MCU_CMD_TARGET_ADDRESS_LEN_REQ 0x01
+#define MCU_CMD_FW_START_REQ 0x02
+#define MCU_CMD_NIC_POWER_CTRL 0x04
+#define MCU_CMD_PATCH_START_REQ 0x05
+#define MCU_CMD_PATCH_FINISH_REQ 0x07
+#define MCU_CMD_PATCH_SEM_CONTROL 0x10
+#define MCU_CMD_FW_SCATTER 0xee
+#define MCU_PKT_ID 0xa0
+#define MCU_Q_NA 3
+#define MCU_PATCH_ADDRESS 0x200000u
+
+#define PATCH_SEM_RELEASE 0
+#define PATCH_SEM_GET 1
+#define PATCH_IS_DL 1
+#define PATCH_NOT_DL_SEM_SUCCESS 2
+#define PATCH_REL_SEM_SUCCESS 3
+
+#define DL_MODE_ENCRYPT BIT(0)
+#define DL_MODE_KEY_IDX_SHIFT 1
+#define DL_MODE_RESET_SEC_IV BIT(3)
+#define DL_CONFIG_ENCRY_MODE_SEL BIT(6)
+#define DL_MODE_NEED_RSP BIT(31)
+
+#define FW_FEATURE_SET_ENCRYPT BIT(0)
+#define FW_FEATURE_SET_KEY_IDX_MASK 0x6u
+#define FW_FEATURE_ENCRY_MODE BIT(4)
+#define FW_FEATURE_OVERRIDE_ADDR BIT(5)
+#define FW_FEATURE_NON_DL BIT(6)
+#define FW_START_OVERRIDE BIT(0)
+
+#define PATCH_SEC_NOT_SUPPORT 0xffffffffu
+#define PATCH_SEC_TYPE_MASK 0xffffu
+#define PATCH_SEC_TYPE_INFO 0x2u
+#define PATCH_SEC_ENC_TYPE_PLAIN 0
+#define PATCH_SEC_ENC_TYPE_AES 1
+#define PATCH_SEC_ENC_TYPE_SCRAMBLE 2

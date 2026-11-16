@@ -1,12 +1,20 @@
 # Port do winawdl para a MediaTek MT7902
 
-Status: 2026-11-16. Fases 0 e 1 concluídas. O driver UMDF está ligado à placa e o chip responde.
+Status: 2026-11-16. Fases 0, 1 e 2 concluídas. O firmware roda na placa a partir de um programa comum.
 
 ## Registro de resultados
 
 | Data | Fase | Resultado |
 |---|---|---|
 | 2026-11-16 | 1 | Aprovada. `regproxy` ligado à placa com Secure Boot ligado (certificado local). `probes/mt7902_chipid` leu BAR de 1 MiB em `0xf820300000`, mapeado direto, `LPCTL 0x0` (driver dono do chip) e `chip id 0x7902`, revisão `0x0000` |
+| 2026-11-16 | 2 | Aprovada. `mt7902/fwboot` executou reset, anéis WFDMA por polling, patch (1 seção) e RAM (4 regiões, build 20251212032127). `MT_CONN_ON_MISC` passou de `0x0` para `0x3` (firmware pronto). DMA a partir de 512 páginas de 4 KiB abaixo de 4 GiB |
+
+Observações da fase 2:
+
+- O chip só aceita endereços de DMA de 32 bits (o mt76 usa máscara de 32 bits). Nesta máquina não havia blocos de 2 MiB livres abaixo de 4 GiB, então o slab é feito de páginas de 4 KiB. Por isso cada anel tem no máximo 256 descritores (uma página).
+- Nenhuma interrupção é habilitada (`HOST_INT_ENA = 0`, `PCIE_MAC_INT_ENABLE = 0`). Comandos e eventos funcionam só com polling de `dma_idx`. O risco 1 está resolvido para o caminho de comando.
+- A conta de administrador não tem o direito "Bloquear páginas na memória". Os testes rodam como SYSTEM por `scripts/run-elevated.ps1 -AsSystem`. O app final vai precisar conceder esse direito ou rodar o rádio como serviço.
+- O driver repete a parada de DMA quando o handle fecha (`IOCTL_REGPROXY_SET_CLOSE_OPS`), como no projeto original.
 
 Observações da fase 1:
 
