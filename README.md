@@ -131,19 +131,80 @@ São poucas amostras, com um aparelho e uma distância. O sentido Apple para PC 
 
 ## Como funciona
 
+### As peças
+
+```mermaid
+flowchart TB
+    subgraph usuario["Sessão do usuário"]
+        explorer["Explorer<br>botão direito: Enviar via AirDrop"]
+        app["WinDrop (WPF)<br>janela e bandeja"]
+        engine["engine.py<br>AirDrop: mDNS, HTTPS, BLE"]
+    end
+    subgraph sistema["LocalSystem, por tarefa agendada"]
+        supervisor["supervisor<br>troca o driver da placa"]
+        awdld["awdld<br>AWDL (OWL)"]
+        radiod["radiod<br>rádio da MT7902"]
+    end
+    subgraph kernel["Windows"]
+        wintun["awdl0<br>interface Wintun"]
+        regproxy["winawdl_regproxy<br>driver UMDF"]
+    end
+    placa[("MT7902<br>firmware MediaTek")]
+    apple(["iPhone e Mac"])
+
+    explorer -- "caminhos dos arquivos" --> app
+    app -- "JSON por stdin e stdout" --> engine
+    app -- "pedido de ligar e desligar" --> supervisor
+    supervisor --> awdld
+    supervisor --> radiod
+    engine -- "IPv6 link-local" --> wintun
+    wintun <--> awdld
+    awdld -- "pipe nomeado, radio_link.h" --> radiod
+    radiod -- "IOCTLs: registradores e DMA" --> regproxy
+    regproxy <--> placa
+    placa <-. "AWDL, canal 149" .-> apple
 ```
-Explorer / bandeja
-        |
-   WinDrop (WPF)  ---- engine.py: AirDrop (mDNS, HTTPS, BLE)
-        |                         |
-        |                     awdl0 (Wintun)
-        |                         |
-   tarefa do sistema  ---->  awdld: AWDL (OWL)
-                                  |  pipe nomeado, radio_link.h
-                             radiod: rádio da MT7902
-                                  |  IOCTLs
-                         winawdl_regproxy (UMDF) -> registradores e DMA da placa
+
+### Um envio, do clique à entrega
+
+```mermaid
+sequenceDiagram
+    actor U as Você
+    participant W as WinDrop
+    participant R as Rádio (awdld e radiod)
+    participant A as iPhone ou Mac
+
+    U->>W: botão direito, Enviar via AirDrop
+    W->>A: anúncio BLE, para acordar o AirDrop
+    R-->>A: quadros AWDL de sincronismo
+    W->>A: mDNS: quem recebe por perto?
+    A-->>W: nome e endereço
+    U->>W: clica no aparelho
+    W->>A: HTTPS /Ask, com a lista de arquivos
+    A-->>W: aceito
+    W->>A: HTTPS /Upload, com os arquivos
+    A-->>W: 200, recebido
+    W-->>U: enviado
 ```
+
+### A chave Radio
+
+```mermaid
+stateDiagram-v2
+    [*] --> WiFi
+    WiFi: Wi-Fi normal (driver da MediaTek)
+    Trocando: tarefa do sistema troca o driver
+    AirDrop: AirDrop no ar (rádio e AWDL)
+    Devolvendo: devolve a placa e as redes salvas
+
+    WiFi --> Trocando: chave ligada
+    Trocando --> AirDrop: rádio de pé
+    Trocando --> Devolvendo: rádio não subiu
+    AirDrop --> Devolvendo: chave desligada, ou o WinDrop fechou
+    Devolvendo --> WiFi: cerca de 10 s
+```
+
+### Pastas
 
 - **`mt7902/`**: o que este fork acrescenta. Bring-up da placa, anéis de DMA por polling, carga do firmware, comandos MCU, modo monitor, transmissão com taxa fixa e o daemon `radiod`.
 - **`awdl/`**: o daemon AWDL do winawdl sobre o [OWL](https://github.com/seemoo-lab/owl), sem alteração.
