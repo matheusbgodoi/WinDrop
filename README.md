@@ -226,6 +226,12 @@ O caminho completo, fase por fase, com o que deu errado e como foi resolvido, es
 
 ## Instalar
 
+**Pelo instalador:** baixe o `WinDrop-0.5.0-setup.exe` em [Releases](https://github.com/matheusbgodoi/WinDrop/releases) e execute. Ele confere se o PC tem a placa MT7902 e para, sem mudar nada, se não tiver. O WinDrop avisa quando houver versão nova; a atualização é rodar o instalador novo por cima.
+
+Não serve para qualquer Windows: só para PCs com a **MediaTek MT7902**. O instalador não é assinado por uma autoridade certificadora, então o SmartScreen pode avisar ao abrir. Foi testado neste PC atualizando uma cópia já instalada; a instalação do zero em outra máquina ainda não foi testada.
+
+**Compilando do código:**
+
 Requisitos: Windows 10 ou 11 de 64 bits, a placa MT7902, Python 3.10 ou mais novo e o .NET 10 Desktop Runtime. Para compilar: Visual Studio Build Tools com o WDK, o SDK do .NET 10 e MinGW-w64 (`winget install BrechtSanders.WinLibs.POSIX.UCRT --scope user`).
 
 ```powershell
