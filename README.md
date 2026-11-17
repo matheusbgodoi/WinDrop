@@ -1,266 +1,274 @@
 <p align="center">
-  <img src="docs/assets/windrop.png" width="128" alt="Logo do WinDrop">
+  <img src="docs/assets/windrop.png" width="128" alt="WinDrop logo">
 </p>
 
 <h1 align="center">WinDrop</h1>
 
 <p align="center">
-  AirDrop de verdade no Windows, pela placa Wi-Fi MediaTek MT7902.<br>
-  Envia e recebe arquivos de iPhones e Macs falando AWDL, o protocolo sem fio do AirDrop.
+  Real AirDrop on Windows, through the MediaTek MT7902 Wi-Fi card.<br>
+  Sends files to and receives them from iPhones and Macs by speaking AWDL, the wireless protocol under AirDrop.
 </p>
 
 <p align="center">
-  <img src="docs/assets/demo-1-segurando.png" width="300" alt="WinDrop com um MacBook por perto e quatro arquivos prontos para enviar">
-  <img src="docs/assets/ui-incoming-ask-dark.png" width="300" alt="Pedido de recebimento de um iPhone">
+  <a href="README.pt-BR.md">Português</a>
 </p>
 
-<p align="center"><sub>À esquerda, captura da janela real com um MacBook real. À direita, renderização do aplicativo com um aparelho de exemplo.</sub></p>
+<p align="center">
+  <img src="docs/assets/demo-1-segurando.png" width="300" alt="WinDrop with a MacBook nearby and four files ready to send">
+  <img src="docs/assets/ui-incoming-ask-dark.png" width="300" alt="An iPhone asking to send photos">
+</p>
 
-O WinDrop é um fork do [winawdl](https://github.com/raph559/winawdl), que faz AirDrop no Windows com uma placa Realtek RTL8852CE. Este fork troca o rádio: um driver em modo usuário para a **MediaTek MT7902**, escrito a partir do driver Linux mt76, que sobe o firmware da MediaTek, recebe e transmite quadros 802.11 crus e serve o mesmo protocolo de rádio que o resto do winawdl espera. Não usa servidor, nuvem nem aplicativo no iPhone: para os aparelhos Apple, o PC aparece no AirDrop como qualquer outro.
+<p align="center"><sub>Left: a capture of the real window with a real MacBook. Right: a render of the app with a stand-in device.</sub></p>
 
-É código de pesquisa, feito e validado em uma máquina. Leia os [limites](#limites) antes de usar.
+WinDrop is a fork of [winawdl](https://github.com/raph559/winawdl), which does AirDrop on Windows with a Realtek RTL8852CE card. This fork swaps the radio: a user-mode driver for the **MediaTek MT7902**, written from the Linux mt76 driver, that boots MediaTek's firmware, receives and transmits raw 802.11 frames, and serves the radio protocol the rest of winawdl expects. No server, no cloud and no app on the iPhone: to Apple devices the PC shows up in AirDrop like any other.
 
-## O que funciona
+This is research code, built and validated on one machine. Read the [limits](#limits) before you use it.
 
-Validado em 2026-11-16, em um desktop com a MT7902 (ASUS TUF GAMING A620M-PLUS WIFI), um MacBook Pro e um iPhone, todos no canal 149.
+## What works
 
-| Sentido | Resultado |
+Validated on 2026-11-16 on a desktop with the MT7902 (ASUS TUF GAMING A620M-PLUS WIFI), a MacBook Pro and an iPhone, all on channel 149.
+
+| Direction | Result |
 |---|---|
-| PC para MacBook | 20 MB com SHA-256 idêntico nos dois lados |
-| MacBook para PC | imagem arrastada no AirDrop do Mac, gravada em Downloads |
-| iPhone para PC | foto enviada pela folha de compartilhamento |
-| PC para iPhone | arquivo enviado e aceito no iPhone |
+| PC to MacBook | 20 MB with identical SHA-256 on both sides |
+| MacBook to PC | an image dragged in the Mac's AirDrop, saved to Downloads |
+| iPhone to PC | a photo sent from the share sheet |
+| PC to iPhone | a file sent and accepted on the iPhone |
 
-- **Botão direito no Explorer:** "Enviar via AirDrop" em qualquer arquivo.
-- **Bandeja:** chave liga/desliga e opção de iniciar com o Windows já recebendo.
-- **Sem pergunta do Windows ao ligar:** uma tarefa do sistema troca o driver da placa e sobe o rádio.
-- **Wi-Fi de volta ao desligar:** em cerca de 10 segundos, com as redes salvas e reconectado.
-- **Velocidade:** entre 3 e 5 MB/s do PC para o Mac a 1 metro (três envios de 20 MB).
+- **Right-click in Explorer:** "Enviar via AirDrop" on any file.
+- **Notification area:** an on/off switch, and an option to start with Windows already receiving.
+- **Runs in the background:** closing the window leaves it in the notification area, still receiving.
+- **No question from Windows when turning on:** a system task swaps the card's driver and starts the radio.
+- **Wi-Fi back when turned off:** in about 10 seconds, with the saved networks, reconnected.
+- **Speed:** between 3 and 5 MB/s from the PC to a Mac a metre away (three 20 MB sends).
 
-## Telas
+## Screens
 
-| Arquivos prontos para enviar | Pedido de recebimento | Arquivo recebido | Rádio desligado |
+| Files ready to send | An incoming request | A received file | Radio off |
 |---|---|---|---|
-| ![Arquivos prontos para enviar](docs/assets/ui-holding-dark.png) | ![Pedido de recebimento](docs/assets/ui-incoming-ask-dark.png) | ![Arquivo recebido](docs/assets/ui-received-dark.png) | ![Rádio desligado](docs/assets/ui-radio-off-dark.png) |
+| ![Files ready to send](docs/assets/ui-holding-dark.png) | ![An incoming request](docs/assets/ui-incoming-ask-dark.png) | ![A received file](docs/assets/ui-received-dark.png) | ![Radio off](docs/assets/ui-radio-off-dark.png) |
 
-Estas quatro são renderizações do próprio aplicativo com aparelhos de exemplo (`winawdl.exe --render`), feitas com a versão atual. O tema acompanha o Windows; em claro fica assim:
+These four are renders by the app itself with stand-in devices (`winawdl.exe --render`), made with the current version. The theme follows Windows; in light it looks like this:
 
 <p align="center">
-  <img src="docs/assets/ui-holding-light.png" width="300" alt="Tema claro">
+  <img src="docs/assets/ui-holding-light.png" width="300" alt="Light theme">
 </p>
 
-As capturas da janela real, com aparelhos reais, estão na demonstração abaixo.
+Captures of the real window, with real devices, are in the demonstration below.
 
-## Demonstração
+## Demonstration
 
-Um envio real, do PC para um MacBook, pelo WinDrop instalado. Os quatro arquivos estão em [docs/assets/samples](docs/assets/samples): três imagens geradas por IA para este fim e um arquivo de texto.
+A real send, from the PC to a MacBook, through the installed WinDrop. The four files are in [docs/assets/samples](docs/assets/samples): three AI-generated images made for this purpose and a text file.
 
 <p align="center">
-  <img src="docs/assets/samples/praia.jpg" width="230" alt="Imagem de exemplo: praia">
-  <img src="docs/assets/samples/cafe.jpg" width="230" alt="Imagem de exemplo: café e caderno">
-  <img src="docs/assets/samples/cidade.jpg" width="230" alt="Imagem de exemplo: cidade ao entardecer">
+  <img src="docs/assets/samples/praia.jpg" width="230" alt="Sample image: a beach">
+  <img src="docs/assets/samples/cafe.jpg" width="230" alt="Sample image: coffee and a notebook">
+  <img src="docs/assets/samples/cidade.jpg" width="230" alt="Sample image: a city at dusk">
 </p>
 
-| 1. Arquivos entregues ao WinDrop | 2. Pedido enviado, aguardando o aceite no Mac | Quando o aparelho não responde |
+| 1. Files handed to WinDrop | 2. Request sent, waiting for the Mac to accept | When the device does not answer |
 |---|---|---|
-| ![Quatro arquivos prontos para enviar](docs/assets/demo-1-segurando.png) | ![Aguardando o aceite](docs/assets/demo-2-pedindo.png) | ![Sem resposta do aparelho](docs/assets/demo-sem-resposta.png) |
+| ![Four files ready to send](docs/assets/demo-1-segurando.png) | ![Waiting for the device](docs/assets/demo-2-pedindo.png) | ![No answer from the device](docs/assets/demo-sem-resposta.png) |
 
-As três telas são capturas da janela real, com o MacBook real na lista. Depois do aceite, os quatro arquivos apareceram em Downloads do Mac com os mesmos tamanhos em bytes dos originais (323165, 435805, 386271 e 120), a 1,6 MB/s. A terceira tela é de uma tentativa anterior, com a tela do Mac apagada.
+All three are captures of the real window, with the real MacBook in the list. After it accepted, the four files were in the Mac's Downloads with the same sizes in bytes as the originals (323165, 435805, 386271 and 120), at 1.6 MB/s. The third screen is from an earlier attempt, with the Mac's screen off.
 
-## Casos de uso
+## Use cases
 
-- **Do iPhone para o PC, sem cabo e sem nuvem.** Fotos e vídeos saem da folha de compartilhamento do iPhone direto para a pasta Downloads do Windows.
-- **Do PC para o iPhone ou o Mac.** Botão direito em um arquivo no Explorer, "Enviar via AirDrop", um clique no aparelho.
-- **Entre o Mac e o PC na mesma mesa.** O PC aparece na janela do AirDrop do Finder como mais um aparelho.
-- **Sem internet e sem rede em comum.** O AirDrop é ponto a ponto: funciona sem roteador, sem conta e sem aplicativo instalado no lado Apple.
-- **PC sempre visível.** Com "Start with Windows, radio on", o WinDrop sobe com o Windows, sem janela, já recebendo.
+- **iPhone to PC, no cable and no cloud.** Photos and videos go from the iPhone's share sheet straight to the Downloads folder on Windows.
+- **PC to iPhone or Mac.** Right-click a file in Explorer, "Enviar via AirDrop", one click on the device.
+- **Mac and PC on the same desk.** The PC shows up in Finder's AirDrop window as one more device.
+- **No internet and no shared network.** AirDrop is peer to peer: it works with no router, no account and nothing installed on the Apple side.
+- **A PC that is always there.** With "Start with Windows, radio on", WinDrop starts with Windows, with no window, already receiving.
 
-## Tecnologias avaliadas e escolhidas
+## What was evaluated and what was chosen
 
-| Decisão | Avaliado | Escolhido | Motivo |
+| Decision | Evaluated | Chosen | Why |
 |---|---|---|---|
-| Como falar com aparelhos Apple | LocalSend e similares (exigem aplicativo no iPhone); AirDrop real | AirDrop real, por AWDL | Era o requisito: aparecer no AirDrop nativo do iPhone e do Mac, sem instalar nada neles |
-| Placa Wi-Fi | Trocar por uma Realtek RTL8852CE, que o winawdl já suporta; portar para a MT7902 da placa-mãe | Portar para a MT7902 | Não trocar hardware |
-| Referência para o chip | Engenharia reversa do driver Windows da MediaTek; driver Linux mt76 | mt76 (caminho `mt7921e`) | Código aberto, e a MT7902 entrou nele no Linux 7.1 |
-| Onde roda o driver | Driver de kernel próprio; modo usuário sobre o `regproxy` do winawdl | Modo usuário | Um erro derruba um processo, não o Windows; o `regproxy` (UMDF) já existia e funciona com Secure Boot |
-| Memória para DMA | Memória contígua de kernel; páginas físicas travadas por AWE | AWE, em páginas de 4 KiB abaixo de 4 GiB | A placa só aceita endereços de 32 bits, e AWE dispensa código de kernel |
-| Interrupções | Interrupções da placa; consulta periódica dos anéis | Consulta (polling) | Não exige nada do driver de kernel |
-| Pilha AWDL | Escrever do zero; OWL | OWL, como no winawdl | Implementação aberta e já validada com aparelhos Apple |
-| Interface de rede no Windows | Driver NDIS próprio; Wintun | Wintun | Assinado, estável e usado pelo winawdl |
-| Como o rádio ganha privilégio | Elevação (UAC) a cada vez; direito "Bloquear páginas na memória" na conta; tarefa agendada como LocalSystem | Tarefa agendada, restrita à conta que instalou | Sem pergunta do Windows ao ligar, e sem exigir novo logon |
-| Wi-Fi e AirDrop | Uso simultâneo (exigiria um cliente Wi-Fi completo próprio); troca do driver ao ligar e desligar | Troca do driver | O uso simultâneo está fora do alcance do projeto hoje |
-| Taxa de transmissão | OFDM 24 e 54 Mb/s; VHT em 20 e 80 MHz | VHT MCS 7 em 80 MHz, fixa | A mais rápida entre as que completaram os envios de teste |
+| How to talk to Apple devices | LocalSend and the like (they need an app on the iPhone); real AirDrop | Real AirDrop, over AWDL | That was the requirement: to show up in the native AirDrop of the iPhone and the Mac, with nothing installed on them |
+| Wi-Fi card | Swapping it for a Realtek RTL8852CE, which winawdl already supports; porting to the motherboard's MT7902 | Porting to the MT7902 | No hardware change |
+| Reference for the chip | Reverse engineering MediaTek's Windows driver; the Linux mt76 driver | mt76 (the `mt7921e` path) | Open source, and the MT7902 entered it in Linux 7.1 |
+| Where the driver runs | A kernel driver of its own; user mode on winawdl's `regproxy` | User mode | A mistake takes down a process, not Windows; `regproxy` (UMDF) already existed and works with Secure Boot |
+| Memory for DMA | Contiguous kernel memory; physical pages locked through AWE | AWE, in 4 KiB pages below 4 GiB | The card only takes 32-bit addresses, and AWE needs no kernel code |
+| Interrupts | The card's interrupts; polling the rings | Polling | Asks nothing of the kernel driver |
+| AWDL stack | Writing one; OWL | OWL, as in winawdl | An open implementation already validated with Apple devices |
+| Network interface on Windows | An NDIS driver of its own; Wintun | Wintun | Signed, stable and what winawdl uses |
+| How the radio gets its privilege | Elevation (UAC) every time; the "Lock pages in memory" right on the account; a scheduled task as LocalSystem | A scheduled task, restricted to the account that installed | No question from Windows when turning on, and no need to sign in again |
+| Wi-Fi and AirDrop | Both at once (it would take a complete Wi-Fi client of its own); swapping the driver on and off | Swapping the driver | Both at once is out of this project's reach today |
+| Transmit rate | OFDM 24 and 54 Mb/s; VHT at 20 and 80 MHz | VHT MCS 7 at 80 MHz, fixed | The fastest among those that completed the test sends |
 
-## Testes
+## Tests
 
-**Por fase**, cada uma com um critério medido na máquina:
+**By phase**, each with a criterion measured on the machine:
 
-| Fase | Critério | Resultado |
+| Phase | Criterion | Result |
 |---|---|---|
-| 1. Driver toma a placa | ler o identificador do chip | `chip id 0x7902` |
-| 2. DMA e firmware | firmware da MediaTek rodando, sem interrupções | pronto em até 4 tentativas, 10 de 10 inicializações |
-| 3. Recepção | quadros nos canais 6, 44 e 149 | incluindo quadros AWDL de aparelhos Apple |
-| 4. Transmissão | testemunha independente no ar | MacBook em modo monitor capturou 30 de 30 quadros OFDM no canal 149 |
-| 5. AWDL | tráfego IPv6 com um aparelho Apple | `ping` ao Mac pela `awdl0`: 10 de 10 |
-| 6. AirDrop | arquivos nos dois sentidos, Mac e iPhone | quatro sentidos validados, um deles com SHA-256 |
-| 7. Integração | cópia instalada, ligar, enviar, desligar | ciclo completo, Wi-Fi de volta em cerca de 10 s |
+| 1. The driver takes the card | read the chip's identifier | `chip id 0x7902` |
+| 2. DMA and firmware | MediaTek's firmware running, with no interrupts | up within 4 attempts, 10 of 10 starts |
+| 3. Reception | frames on channels 6, 44 and 149 | including AWDL frames from Apple devices |
+| 4. Transmission | an independent witness on air | a MacBook in monitor mode captured 30 of 30 OFDM frames on channel 149 |
+| 5. AWDL | IPv6 traffic with an Apple device | `ping` to the Mac over `awdl0`: 10 of 10 |
+| 6. AirDrop | files both ways, Mac and iPhone | four directions validated, one of them by SHA-256 |
+| 7. Integration | the installed copy: on, send, off | the whole cycle, Wi-Fi back in about 10 s |
 
-**Automatizados:**
+**Automated:**
 
-- `airdrop/tests`: 84 testes, todos passando (`python -m unittest discover -s tests`).
-- `scripts\build-app.ps1 -Check`: 134 de 135. O que falha procura uma mensagem do `ping.exe` em inglês e este Windows está em português; falha igual sem as mudanças deste fork.
+- `airdrop/tests`: 84 tests, all passing (`python -m unittest discover -s tests`).
+- `scripts\build-app.ps1 -Check`: 134 of 135. The failing one looks for a message of `ping.exe` in English and this Windows is in Portuguese; it fails the same way without this fork's changes.
 
-**Ferramentas de teste do fork:** `mt7902/fwboot`, `rxtest`, `txtest` e `radioclient` (rádio), `scripts/sniff-test.ps1` (Mac como testemunha), `scripts/rate-trial.ps1` (velocidade por taxa), `scripts/app-radio-switch.ps1` e `scripts/app-send.ps1` (o aplicativo, por automação de interface).
+**The fork's own test tools:** `mt7902/fwboot`, `rxtest`, `txtest` and `radioclient` (the radio), `scripts/sniff-test.ps1` (a Mac as witness), `scripts/rate-trial.ps1` (speed by rate), `scripts/app-radio-switch.ps1` and `scripts/app-send.ps1` (the app, through UI Automation).
 
 ## Benchmarks
 
-Envios reais de um arquivo de 20 MB do PC para um MacBook Pro a cerca de 1 metro, pelo WinDrop instalado, um envio por medição:
+Real sends of a 20 MB file from the PC to a MacBook Pro about a metre away, through the installed WinDrop, one send per measurement:
 
-| Taxa de dados | Velocidade |
+| Data rate | Speed |
 |---|---|
-| OFDM 24 Mb/s | 1,5 MB/s |
-| OFDM 54 Mb/s | 1,1 MB/s |
-| VHT MCS 8, 20 MHz | 3,1 MB/s |
-| VHT MCS 5, 80 MHz | 3,4 MB/s |
-| **VHT MCS 7, 80 MHz (padrão)** | **5,2, 5,1 e 3,1 MB/s** |
-| VHT MCS 9, 80 MHz | 2,3 MB/s |
+| OFDM 24 Mb/s | 1.5 MB/s |
+| OFDM 54 Mb/s | 1.1 MB/s |
+| VHT MCS 8, 20 MHz | 3.1 MB/s |
+| VHT MCS 5, 80 MHz | 3.4 MB/s |
+| **VHT MCS 7, 80 MHz (default)** | **5.2, 5.1 and 3.1 MB/s** |
+| VHT MCS 9, 80 MHz | 2.3 MB/s |
 
-Outras medidas: `ping` de 1400 bytes ao Mac pela `awdl0` com 0% de perda e mediana de 150 ms; sinal do Mac e do iPhone entre -52 e -60 dBm; Wi-Fi de volta cerca de 10 s depois de desligar.
+Other measurements: `ping` of 1400 bytes to the Mac over `awdl0` with 0% loss and a median of 150 ms; signal of the Mac and the iPhone between -52 and -60 dBm; Wi-Fi back about 10 s after turning off.
 
-São poucas amostras, com um aparelho e uma distância. O sentido Apple para PC e o iPhone na taxa padrão ainda não foram medidos.
+These are few samples, with one device at one distance. The Apple-to-PC direction and the iPhone at the default rate have not been measured yet.
 
-## Como funciona
+## How it works
 
-### As peças
+### The parts
 
 ```mermaid
 flowchart TB
-    subgraph usuario["Sessão do usuário"]
-        explorer["Explorer<br>botão direito: Enviar via AirDrop"]
-        app["WinDrop (WPF)<br>janela e bandeja"]
+    subgraph user["The user's session"]
+        explorer["Explorer<br>right-click: Enviar via AirDrop"]
+        app["WinDrop (WPF)<br>window and notification area"]
         engine["engine.py<br>AirDrop: mDNS, HTTPS, BLE"]
     end
-    subgraph sistema["LocalSystem, por tarefa agendada"]
-        supervisor["supervisor<br>troca o driver da placa"]
+    subgraph system["LocalSystem, by scheduled task"]
+        supervisor["supervisor<br>swaps the card's driver"]
         awdld["awdld<br>AWDL (OWL)"]
-        radiod["radiod<br>rádio da MT7902"]
+        radiod["radiod<br>the MT7902's radio"]
     end
     subgraph kernel["Windows"]
-        wintun["awdl0<br>interface Wintun"]
-        regproxy["winawdl_regproxy<br>driver UMDF"]
+        wintun["awdl0<br>Wintun interface"]
+        regproxy["winawdl_regproxy<br>UMDF driver"]
     end
-    placa[("MT7902<br>firmware MediaTek")]
-    apple(["iPhone e Mac"])
+    card[("MT7902<br>MediaTek firmware")]
+    apple(["iPhone and Mac"])
 
-    explorer -- "caminhos dos arquivos" --> app
-    app -- "JSON por stdin e stdout" --> engine
-    app -- "pedido de ligar e desligar" --> supervisor
+    explorer -- "file paths" --> app
+    app -- "JSON over stdin and stdout" --> engine
+    app -- "asks to turn on and off" --> supervisor
     supervisor --> awdld
     supervisor --> radiod
-    engine -- "IPv6 link-local" --> wintun
+    engine -- "link-local IPv6" --> wintun
     wintun <--> awdld
-    awdld -- "pipe nomeado, radio_link.h" --> radiod
-    radiod -- "IOCTLs: registradores e DMA" --> regproxy
-    regproxy <--> placa
-    placa <-. "AWDL, canal 149" .-> apple
+    awdld -- "named pipe, radio_link.h" --> radiod
+    radiod -- "IOCTLs: registers and DMA" --> regproxy
+    regproxy <--> card
+    card <-. "AWDL, channel 149" .-> apple
 ```
 
-### Um envio, do clique à entrega
+### A send, from the click to the delivery
 
 ```mermaid
 sequenceDiagram
-    actor U as Você
+    actor U as You
     participant W as WinDrop
-    participant R as Rádio (awdld e radiod)
-    participant A as iPhone ou Mac
+    participant R as Radio (awdld and radiod)
+    participant A as iPhone or Mac
 
-    U->>W: botão direito, Enviar via AirDrop
-    W->>A: anúncio BLE, para acordar o AirDrop
-    R-->>A: quadros AWDL de sincronismo
-    W->>A: mDNS: quem recebe por perto?
-    A-->>W: nome e endereço
-    U->>W: clica no aparelho
-    W->>A: HTTPS /Ask, com a lista de arquivos
-    A-->>W: aceito
-    W->>A: HTTPS /Upload, com os arquivos
-    A-->>W: 200, recebido
-    W-->>U: enviado
+    U->>W: right-click, Enviar via AirDrop
+    W->>A: BLE advertisement, to wake AirDrop
+    R-->>A: AWDL synchronisation frames
+    W->>A: mDNS: who receives nearby?
+    A-->>W: name and address
+    U->>W: clicks the device
+    W->>A: HTTPS /Ask, with the list of files
+    A-->>W: accepted
+    W->>A: HTTPS /Upload, with the files
+    A-->>W: 200, received
+    W-->>U: sent
 ```
 
-### A chave Radio
+### The Radio switch
 
 ```mermaid
 stateDiagram-v2
     [*] --> WiFi
-    WiFi: Wi-Fi normal (driver da MediaTek)
-    Trocando: tarefa do sistema troca o driver
-    AirDrop: AirDrop no ar (rádio e AWDL)
-    Devolvendo: devolve a placa e as redes salvas
+    WiFi: Normal Wi-Fi (MediaTek's driver)
+    Swapping: the system task swaps the driver
+    AirDrop: AirDrop on air (radio and AWDL)
+    GivingBack: gives the card and the saved networks back
 
-    WiFi --> Trocando: chave ligada
-    Trocando --> AirDrop: rádio de pé
-    Trocando --> Devolvendo: rádio não subiu
-    AirDrop --> Devolvendo: chave desligada, ou o WinDrop fechou
-    Devolvendo --> WiFi: cerca de 10 s
+    WiFi --> Swapping: switch on
+    Swapping --> AirDrop: radio up
+    Swapping --> GivingBack: radio did not start
+    AirDrop --> GivingBack: switch off, or WinDrop quit
+    GivingBack --> WiFi: about 10 s
 ```
 
-### Pastas
+### Folders
 
-- **`mt7902/`**: o que este fork acrescenta. Bring-up da placa, anéis de DMA por polling, carga do firmware, comandos MCU, modo monitor, transmissão com taxa fixa e o daemon `radiod`.
-- **`awdl/`**: o daemon AWDL do winawdl sobre o [OWL](https://github.com/seemoo-lab/owl), sem alteração.
-- **`airdrop/`**: receptor e remetente AirDrop em Python.
-- **`app/`**: o aplicativo, com o botão direito, a chave na bandeja e o início com o Windows.
-- **`driver/regproxy/`**: o driver UMDF que entrega a placa ao modo usuário.
+- **`mt7902/`**: what this fork adds. Card bring-up, polled DMA rings, firmware load, MCU commands, monitor mode, fixed-rate transmission and the `radiod` daemon.
+- **`awdl/`**: winawdl's AWDL daemon on [OWL](https://github.com/seemoo-lab/owl), unchanged.
+- **`airdrop/`**: the AirDrop receiver and sender, in Python.
+- **`app/`**: the app, with the right-click entry, the switch in the notification area and the start with Windows.
+- **`driver/regproxy/`**: the UMDF driver that hands the card to user mode.
 
-O caminho completo, fase por fase, com o que deu errado e como foi resolvido, está em [docs/MT7902-PORT.md](docs/MT7902-PORT.md). O guia de uso está em [docs/WINDROP.md](docs/WINDROP.md).
+The whole path, phase by phase, with what went wrong and how it was solved, is in [docs/MT7902-PORT.md](docs/MT7902-PORT.md) (in Portuguese). The usage guide is in [docs/WINDROP.md](docs/WINDROP.md) (in Portuguese).
 
-## Limites
+## Limits
 
-- **Wi-Fi e AirDrop não funcionam ao mesmo tempo no PC.** A placa é uma só: com o rádio ligado ela fala AWDL e o Wi-Fi do PC fica fora. Com cabo de rede o PC não perde a internet. O iPhone e o Mac não perdem nada.
-- **Uma placa, uma máquina.** Só a MT7902 (`PCI\VEN_14C3&DEV_7902`), e só foi testado em um PC.
-- **Só 5 GHz.** Em 2,4 GHz a placa só transmite a 1 Mb/s. O AirDrop usa o canal 149.
-- **Velocidade modesta.** Taxa fixa, sem agregação nem adaptação: um aparelho longe demais para a taxa não recebe. O sentido Apple para PC não foi medido.
-- **"Todos" no AirDrop.** O PC não é um contato da conta iCloud, então o iPhone precisa estar em "Todos por 10 minutos". Não há login com iCloud, "Somente contatos" nem Área de Transferência Universal: dependem de chaves que a Apple só emite para os aparelhos dela.
-- **Fotos originais.** O receptor declara HEIF, HEVC e ProRes, como um Mac, para o iPhone não converter. Ainda falta confirmar com uma foto da câmera.
-- **Arestas conhecidas.** O firmware às vezes pede parada do DMA ao subir (o rádio tenta de novo sozinho) e uma vez faltou memória física baixa para o DMA.
+- **Wi-Fi and AirDrop do not work at the same time on the PC.** There is one card: with the radio on it speaks AWDL and the PC's Wi-Fi is off. On a network cable the PC keeps its internet. The iPhone and the Mac lose nothing.
+- **One card, one machine.** Only the MT7902 (`PCI\VEN_14C3&DEV_7902`), and it has been tested on one PC.
+- **5 GHz only.** On 2.4 GHz the card only transmits at 1 Mb/s. AirDrop uses channel 149.
+- **Modest speed.** A fixed rate, no aggregation and no adaptation: a device too far for the rate receives nothing. The Apple-to-PC direction has not been measured.
+- **"Everyone" in AirDrop.** The PC is not a contact of the iCloud account, so the iPhone has to be on "Everyone for 10 Minutes". There is no iCloud sign-in, no "Contacts Only" and no Universal Clipboard: they depend on keys Apple only issues to its own devices.
+- **Original photos.** The receiver declares HEIF, HEVC and ProRes, as a Mac does, so that the iPhone does not convert. This still has to be confirmed with a photo from the camera.
+- **Known rough edges.** The firmware sometimes asks for a DMA stop as it starts (the radio tries again by itself) and once there was not enough low physical memory for DMA.
 
-## Instalar
+## Install
 
-**Pelo instalador:** baixe o `WinDrop-0.5.0-setup.exe` em [Releases](https://github.com/matheusbgodoi/WinDrop/releases) e execute. Ele confere se o PC tem a placa MT7902 e para, sem mudar nada, se não tiver. O WinDrop avisa quando houver versão nova; a atualização é rodar o instalador novo por cima.
+**With the installer:** download `WinDrop-0.5.0-setup.exe` from [Releases](https://github.com/matheusbgodoi/WinDrop/releases) and run it. It checks that the PC has the MT7902 and stops, having changed nothing, if it does not. WinDrop says when there is a newer version; updating is running the new installer over the old one.
 
-Não serve para qualquer Windows: só para PCs com a **MediaTek MT7902**. O instalador não é assinado por uma autoridade certificadora, então o SmartScreen pode avisar ao abrir. Foi testado neste PC atualizando uma cópia já instalada; a instalação do zero em outra máquina ainda não foi testada.
+It is not for every Windows PC: only for those with the **MediaTek MT7902**. The installer is not signed by a certificate authority, so SmartScreen may warn when it opens. It has been tested on this PC, updating a copy already installed; a first install on another machine has not been tested yet.
 
-**Compilando do código:**
+**Building from source:**
 
-Requisitos: Windows 10 ou 11 de 64 bits, a placa MT7902, Python 3.10 ou mais novo e o .NET 10 Desktop Runtime. Para compilar: Visual Studio Build Tools com o WDK, o SDK do .NET 10 e MinGW-w64 (`winget install BrechtSanders.WinLibs.POSIX.UCRT --scope user`).
+Requirements: 64-bit Windows 10 or 11, the MT7902 card, Python 3.10 or newer and the .NET 10 Desktop Runtime. To build: Visual Studio Build Tools with the WDK, the .NET 10 SDK and MinGW-w64 (`winget install BrechtSanders.WinLibs.POSIX.UCRT --scope user`).
 
 ```powershell
 git clone --recurse-submodules https://github.com/matheusbgodoi/WinDrop
 cd WinDrop
-git clone https://github.com/morrownr/mt76 ref\mt76     # firmware da MT7902
+git clone https://github.com/morrownr/mt76 ref\mt76     # the MT7902's firmware
 .\scripts\fetch-wintun.ps1
 .\scripts\build-installer.ps1 -Build -AllowDirty
-.\build\installer\winawdl-0.4.0\install.cmd             # pede administrador
+.\build\installer\winawdl-0.5.0\install.cmd             # asks for administrator rights
 ```
 
-A instalação assina o driver com um certificado criado no próprio PC, cria duas regras de firewall para endereços link-local, registra a tarefa que sobe o rádio e a que devolve o Wi-Fi na inicialização. `C:\Program Files\winawdl\uninstall.cmd` desfaz tudo.
+Installing signs the driver with a certificate made on the PC itself, adds two firewall rules for link-local addresses, and registers the task that runs the radio and the one that gives Wi-Fi back at startup. `C:\Program Files\winawdl\uninstall.cmd` undoes all of it.
 
-## Usar
+## Use
 
-1. Abra o WinDrop pelo Menu Iniciar e ligue a chave **Radio**.
-2. **Enviar:** botão direito em um arquivo, **Enviar via AirDrop**, e clique no aparelho. Ou arraste arquivos para a janela.
-3. **Receber:** no iPhone ou no Mac, escolha o PC no AirDrop. O arquivo vai para Downloads.
-4. Desligue a chave para o Wi-Fi do PC voltar.
+1. Open WinDrop from the Start Menu and turn the **Radio** switch on.
+2. **Send:** right-click a file, **Enviar via AirDrop**, and click the device. Or drag files onto the window.
+3. **Receive:** on the iPhone or the Mac, pick the PC in AirDrop. The file goes to Downloads.
+4. Closing the window leaves WinDrop in the notification area, still receiving. **Quit** in the icon's menu ends it.
+5. Turn the switch off for the PC's Wi-Fi to come back.
 
-## Créditos e licenças
+To have it there from sign-in, tick **Start with Windows, radio on** in the menu of the icon in the notification area. It is off until you tick it.
 
-- [winawdl](https://github.com/raph559/winawdl), de raph559: o projeto original, o aplicativo, o driver regproxy, o receptor AirDrop e o daemon AWDL para Windows. O README dele está em [docs/UPSTREAM-README.md](docs/UPSTREAM-README.md).
-- [OWL](https://github.com/seemoo-lab/owl), do Secure Mobile Networking Lab: a implementação aberta do AWDL (GPL-3.0).
-- [mt76](https://github.com/openwrt/mt76): o driver Linux que serviu de referência para a MT7902.
-- [Wintun](https://www.wintun.net/), da WireGuard: a interface de rede virtual.
+## Credits and licences
 
-**Uso não comercial, com citação obrigatória da fonte.** O trabalho original deste fork (a pasta `mt7902/`, o nome, o logo, a documentação e as mudanças feitas no projeto original) está sob a [PolyForm Noncommercial 1.0.0](LICENSE-WINDROP.md): pode usar, estudar, modificar e redistribuir sem fins comerciais, mantendo o aviso de autoria; não pode vender nem embutir em produto pago.
+- [winawdl](https://github.com/raph559/winawdl), by raph559: the original project, the app, the regproxy driver, the AirDrop receiver and the AWDL daemon for Windows. Its README is in [docs/UPSTREAM-README.md](docs/UPSTREAM-README.md).
+- [OWL](https://github.com/seemoo-lab/owl), by the Secure Mobile Networking Lab: the open implementation of AWDL (GPL-3.0).
+- [mt76](https://github.com/openwrt/mt76): the Linux driver that was the reference for the MT7902.
+- [Wintun](https://www.wintun.net/), by WireGuard: the virtual network interface.
 
-O que vem de outros projetos continua sob a licença original (MIT para o winawdl, GPL-3.0 para o daemon AWDL), e este fork não pode restringi-las. [LICENSING.md](LICENSING.md) diz qual licença vale para cada parte. O firmware da MediaTek não faz parte deste repositório.
+**Noncommercial use, with the source credited.** This fork's original work (the `mt7902/` folder, the name, the logo, the documentation and the changes made to the original project) is under the [PolyForm Noncommercial License 1.0.0](LICENSE-WINDROP.md): you may use, study, modify and redistribute it for noncommercial purposes, keeping the notice of authorship; you may not sell it or build it into a paid product.
 
-AirDrop, AWDL, iPhone, Mac e iCloud são marcas da Apple. Este projeto não é afiliado à Apple nem à MediaTek.
+What comes from other projects stays under its original licence (MIT for winawdl, GPL-3.0 for the AWDL daemon), and this fork cannot restrict those. [LICENSING.md](LICENSING.md) says which licence covers which part. MediaTek's firmware is not part of this repository.
+
+AirDrop, AWDL, iPhone, Mac and iCloud are trademarks of Apple. This project is not affiliated with Apple or MediaTek.

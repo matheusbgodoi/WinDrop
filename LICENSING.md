@@ -1,50 +1,52 @@
-# Licenças do WinDrop
+# WinDrop licensing
 
-O WinDrop é um fork, então não tem uma licença só. Cada parte segue a licença de quem a escreveu, e este arquivo diz qual vale onde.
+WinDrop is a fork, so it does not have one licence. Each part follows the licence of whoever wrote it, and this file says which applies where.
 
-Isto é um resumo de boa-fé, não um parecer jurídico. Em caso de dúvida vale o texto de cada licença.
+This is a good-faith summary, not legal advice. Where there is doubt, the text of each licence is what counts.
 
-## O que é deste fork
+[Português](LICENSING.pt-BR.md)
 
-Uso não comercial, com citação obrigatória da fonte: [PolyForm Noncommercial 1.0.0](LICENSE-WINDROP.md).
+## What belongs to this fork
 
-Vale para o trabalho original deste fork:
+Noncommercial use, with the source credited: the [PolyForm Noncommercial License 1.0.0](LICENSE-WINDROP.md).
 
-- a pasta `mt7902/` (o rádio da MediaTek MT7902);
-- o nome WinDrop, o logo (`docs/assets/windrop.svg`) e o ícone;
-- a documentação em `README.md` e `docs/` (menos `docs/UPSTREAM-README.md`);
-- os scripts e ferramentas que este fork acrescentou em `scripts/` e `tools/`;
-- as mudanças que este fork fez em arquivos do projeto original.
+It covers this fork's original work:
 
-Na prática:
+- the `mt7902/` folder (the radio for the MediaTek MT7902);
+- the name WinDrop, the logo (`docs/assets/windrop.svg`) and the icon;
+- the documentation in `README.md` and `docs/` (except `docs/UPSTREAM-README.md`);
+- the scripts and tools this fork added in `scripts/` and `tools/`;
+- the changes this fork made to files of the original project.
 
-- **Pode:** usar, estudar, modificar e redistribuir para fins pessoais, de estudo, de pesquisa e sem fins lucrativos.
-- **Não pode:** uso comercial. Isso inclui vender o programa, vender um fork dele ou embuti-lo em um produto ou serviço pago.
-- **Tem que:** manter o aviso abaixo e o texto da licença em toda cópia ou obra derivada.
+In practice:
+
+- **You may:** use, study, modify and redistribute it for personal, study, research and non-profit purposes.
+- **You may not:** use it commercially. That includes selling the program, selling a fork of it, or building it into a paid product or service.
+- **You must:** keep the notice below and the text of the licence in every copy or derived work.
 
 > Required Notice: Copyright (c) 2026 matheusbgodoi (https://github.com/matheusbgodoi/WinDrop)
 
-Quem quiser uso comercial precisa de uma licença à parte, combinada com o autor.
+Commercial use needs a separate licence, agreed with the author.
 
-## O que vem de outros projetos
+## What comes from other projects
 
-Estas partes continuam sob a licença original. Este fork não pode mudá-las nem acrescentar restrições a elas.
+These parts stay under their original licence. This fork cannot change them or add restrictions to them.
 
-| Parte | Origem | Licença |
+| Part | Origin | Licence |
 |---|---|---|
-| `app/`, `driver/`, `installer/`, `scripts/` (o que já existia) | [winawdl](https://github.com/raph559/winawdl), de Raphaël Richaud | MIT, em [LICENSE](LICENSE) |
-| `airdrop/` | winawdl, adaptado do omdrop | MIT, em [airdrop/LICENSE](airdrop/LICENSE) |
-| `awdl/` e `upstream/owl` | winawdl e [OWL](https://github.com/seemoo-lab/owl) | GPL-3.0 ou posterior, em [awdl/LICENSE](awdl/LICENSE) |
-| `radio/` e `upstream/devourer` | winawdl e devourer | GPL-2.0, em [radio/LICENSE](radio/LICENSE). Não entram no instalador do WinDrop |
-| `wintun.dll` | [Wintun](https://www.wintun.net/), da WireGuard | licença própria dos binários, incluída no instalador |
-| Firmware da MT7902 | MediaTek, pelo linux-firmware | licença da MediaTek, incluída no instalador. Não está neste repositório |
+| `app/`, `driver/`, `installer/`, `scripts/` (what was already there) | [winawdl](https://github.com/raph559/winawdl), by Raphaël Richaud | MIT, in [LICENSE](LICENSE) |
+| `airdrop/` | winawdl, adapted from omdrop | MIT, in [airdrop/LICENSE](airdrop/LICENSE) |
+| `awdl/` and `upstream/owl` | winawdl and [OWL](https://github.com/seemoo-lab/owl) | GPL-3.0 or later, in [awdl/LICENSE](awdl/LICENSE) |
+| `radio/` and `upstream/devourer` | winawdl and devourer | GPL-2.0, in [radio/LICENSE](radio/LICENSE). Not shipped in WinDrop's installer |
+| `wintun.dll` | [Wintun](https://www.wintun.net/), by WireGuard | the binaries' own licence, shipped in the installer |
+| The MT7902's firmware | MediaTek, through linux-firmware | MediaTek's licence, shipped in the installer. Not in this repository |
 
-Consequências que convém saber:
+What follows from that:
 
-- O `awdld.exe` é GPL-3.0. Quem recebe o instalador pode usar, modificar e redistribuir esse programa nos termos da GPL, inclusive comercialmente. A restrição de uso não comercial não alcança essa parte.
-- O mesmo vale para o que é MIT: a restrição cobre só o que este fork escreveu.
-- O código em `mt7902/` foi escrito a partir do estudo do driver Linux [mt76](https://github.com/openwrt/mt76), que é BSD-3-Clause-Clear e ISC. As sequências de inicialização e os formatos de comando vêm dele.
+- `awdld.exe` is GPL-3.0. Whoever gets the installer may use, modify and redistribute that program under the GPL, commercially too. The noncommercial restriction does not reach that part.
+- The same goes for what is MIT: the restriction covers only what this fork wrote.
+- The code in `mt7902/` was written from a study of the Linux [mt76](https://github.com/openwrt/mt76) driver, which is BSD-3-Clause-Clear and ISC. The bring-up sequences and the command formats come from it.
 
-## Marcas
+## Trademarks
 
-AirDrop, AWDL, iPhone, Mac e iCloud são marcas da Apple. MediaTek é marca da MediaTek. Este projeto não é afiliado a nenhuma das duas.
+AirDrop, AWDL, iPhone, Mac and iCloud are trademarks of Apple. MediaTek is a trademark of MediaTek. This project is not affiliated with either.
