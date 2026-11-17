@@ -593,7 +593,7 @@ public static class Stage
     {
         var caption = new TextBlock
         {
-            Text = "winawdl", FontSize = 12, Margin = new Thickness(16, 0, 0, 0),
+            Text = "WinDrop", FontSize = 12, Margin = new Thickness(16, 0, 0, 0),
             VerticalAlignment = VerticalAlignment.Center,
         };
         caption.SetResourceReference(TextBlock.ForegroundProperty, "Ink");
@@ -748,7 +748,7 @@ public static class Stage
         {
             dc.DrawRectangle(light.Brush(light.Table), null, new Rect(0, 0, width, height));
             dc.DrawImage(AppIcon.Draw(256, Colors.White, AppIcon.Ground), new Rect(128, 192, 256, 256));
-            dc.DrawText(Line("winawdl", "Segoe UI Variable Display, Segoe UI", 116, FontWeights.SemiBold, light.Ink),
+            dc.DrawText(Line("WinDrop", "Segoe UI Variable Display, Segoe UI", 116, FontWeights.SemiBold, light.Ink),
                         new Point(440, 176));
             dc.DrawText(Line("AirDrop and AWDL on Windows,", "Segoe UI Variable Text, Segoe UI", 40,
                              FontWeights.Normal, light.InkSoft), new Point(446, 326));

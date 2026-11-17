@@ -9,7 +9,8 @@ $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot\toolchain.ps1"
 
 $repo = Split-Path $PSScriptRoot -Parent
-$changed = git -C $repo status --porcelain
+# Checkouts nested inside the submodules are reference material, not built from.
+$changed = git -C $repo status --porcelain --ignore-submodules=dirty
 if ($changed -and -not $AllowDirty) {
   throw 'There are uncommitted changes. Commit them, or pass -AllowDirty for a trial that is not published.'
 }

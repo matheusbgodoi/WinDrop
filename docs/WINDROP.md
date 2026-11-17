@@ -23,23 +23,17 @@ Todos os testes foram no canal 149 (5 GHz), com o iPhone e o Mac em "Todos".
 
 ## Telas
 
-Com o rádio ligado, o MacBook aparece em "Nearby" e um arquivo recebido fica na prateleira "Received" (captura feita antes da troca de nome, por isso o título antigo):
-
-![MacBook por perto e uma imagem recebida](assets/app-macbook-nearby.png)
-
-Com o rádio ligado pela cópia instalada, já com o nome novo:
+Captura da janela real da cópia instalada, com o rádio ligado e um MacBook real por perto:
 
 ![Rádio ligado, MacBook na lista](assets/app-radio-on.png)
 
-Com o rádio desligado, o Wi-Fi do PC funciona normalmente:
+Com arquivos entregues pelo botão direito, prontos para enviar:
 
-![Rádio desligado](assets/app-radio-off.png)
+![Quatro arquivos prontos para enviar](assets/demo-1-segurando.png)
 
-A lista de aparelhos foi redesenhada: um rosto redondo para cada aparelho, lado a lado, com o nome embaixo. Estas duas imagens são renderizações do próprio aplicativo com aparelhos de exemplo (`winawdl.exe --render`); a captura "Rádio ligado" acima é da cópia instalada, com o MacBook real:
+Com o rádio desligado (renderização do aplicativo), quando o Wi-Fi do PC funciona normalmente:
 
-![Aparelhos por perto, tema escuro](assets/ui-nearby-dark.png)
-
-![Aparelhos por perto, tema claro](assets/ui-nearby-light.png)
+![Rádio desligado](assets/ui-radio-off-dark.png)
 
 ## Como usar
 

@@ -10,9 +10,11 @@
 </p>
 
 <p align="center">
+  <img src="docs/assets/demo-1-segurando.png" width="300" alt="WinDrop com um MacBook por perto e quatro arquivos prontos para enviar">
   <img src="docs/assets/ui-incoming-ask-dark.png" width="300" alt="Pedido de recebimento de um iPhone">
-  <img src="docs/assets/ui-holding-light.png" width="300" alt="Arquivos prontos para enviar, tema claro">
 </p>
+
+<p align="center"><sub>À esquerda, captura da janela real com um MacBook real. À direita, renderização do aplicativo com um aparelho de exemplo.</sub></p>
 
 O WinDrop é um fork do [winawdl](https://github.com/raph559/winawdl), que faz AirDrop no Windows com uma placa Realtek RTL8852CE. Este fork troca o rádio: um driver em modo usuário para a **MediaTek MT7902**, escrito a partir do driver Linux mt76, que sobe o firmware da MediaTek, recebe e transmite quadros 802.11 crus e serve o mesmo protocolo de rádio que o resto do winawdl espera. Não usa servidor, nuvem nem aplicativo no iPhone: para os aparelhos Apple, o PC aparece no AirDrop como qualquer outro.
 
@@ -37,15 +39,17 @@ Validado em 2026-11-16, em um desktop com a MT7902 (ASUS TUF GAMING A620M-PLUS W
 
 ## Telas
 
-| Aparelhos por perto | Pedido de recebimento | Arquivo recebido |
-|---|---|---|
-| ![Aparelhos por perto](docs/assets/ui-holding-dark.png) | ![Pedido de recebimento](docs/assets/ui-incoming-ask-dark.png) | ![Arquivo recebido](docs/assets/ui-received-dark.png) |
+| Arquivos prontos para enviar | Pedido de recebimento | Arquivo recebido | Rádio desligado |
+|---|---|---|---|
+| ![Arquivos prontos para enviar](docs/assets/ui-holding-dark.png) | ![Pedido de recebimento](docs/assets/ui-incoming-ask-dark.png) | ![Arquivo recebido](docs/assets/ui-received-dark.png) | ![Rádio desligado](docs/assets/ui-radio-off-dark.png) |
 
-As três imagens acima são renderizações do próprio aplicativo com aparelhos de exemplo (`winawdl.exe --render`). Esta é uma captura da cópia instalada, com um MacBook real por perto:
+Estas quatro são renderizações do próprio aplicativo com aparelhos de exemplo (`winawdl.exe --render`), feitas com a versão atual. O tema acompanha o Windows; em claro fica assim:
 
 <p align="center">
-  <img src="docs/assets/app-radio-on.png" width="300" alt="WinDrop instalado, com um MacBook real na lista">
+  <img src="docs/assets/ui-holding-light.png" width="300" alt="Tema claro">
 </p>
+
+As capturas da janela real, com aparelhos reais, estão na demonstração abaixo.
 
 ## Demonstração
 
