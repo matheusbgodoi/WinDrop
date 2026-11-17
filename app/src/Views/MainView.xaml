@@ -149,53 +149,64 @@
 
           <StackPanel Visibility="{Binding ShowsNearby, Converter={StaticResource Shown}}">
             <TextBlock Style="{StaticResource Label}" Text="Nearby" Margin="2,2,0,8" />
+            <!-- Devices as people across a table: a round face each, its name under it, side by
+                 side. Pressing a face, or dropping files on it, sends. -->
             <ItemsControl ItemsSource="{Binding Peers}" Focusable="False">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <WrapPanel />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                  <Button Style="{StaticResource PlateButton}" Margin="0,0,0,10" Tag="arrive"
+                  <Button Style="{StaticResource PlateButton}" Margin="0,0,10,10" Width="148" Tag="arrive"
                           Loaded="OnArrived" AllowDrop="True" Drop="OnDropOnPeer" DragOver="OnDragOverPeer"
                           Command="{Binding Press}" t:Plate.Progress="{Binding Progress}"
                           AutomationProperties.Name="{Binding Name}">
-                    <Grid>
-                      <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                      </Grid.ColumnDefinitions>
-                      <!-- The device sits in a small well of its own: it is where the files land. -->
-                      <t:Well Width="44" Height="44" Radius="12" Margin="0,0,14,0"
-                              Fill="{DynamicResource Well}" Edge="{DynamicResource Edge}"
-                              Outline="{DynamicResource Outline}"
-                              ShadeStrength="{DynamicResource ShadeStrength}">
-                        <TextBlock Style="{StaticResource Glyph}" FontSize="22" Text="{Binding Glyph}" />
-                      </t:Well>
-                      <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource Name}" Text="{Binding Name}" />
-                        <TextBlock Text="{Binding Status}">
-                          <TextBlock.Style>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource Figures}">
-                              <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsProblem}" Value="True">
-                                  <Setter Property="Foreground" Value="{DynamicResource Ember}" />
-                                </DataTrigger>
-                              </Style.Triggers>
-                            </Style>
-                          </TextBlock.Style>
-                        </TextBlock>
-                      </StackPanel>
-                      <Border Grid.Column="2" CornerRadius="10" Padding="14,7" Margin="12,0,0,0"
-                              VerticalAlignment="Center" Background="{DynamicResource Accent}"
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top">
+                      <Grid Width="64" Height="64" Margin="0,2,0,10">
+                        <Ellipse>
+                          <Ellipse.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                              <GradientStop Color="#5AC1FF" Offset="0" />
+                              <GradientStop Color="#0B6BFF" Offset="1" />
+                            </LinearGradientBrush>
+                          </Ellipse.Fill>
+                        </Ellipse>
+                        <TextBlock Style="{StaticResource Glyph}" FontSize="28" Text="{Binding Glyph}"
+                                   Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <!-- Sent: a small mark on the face's edge, as a badge sits on an icon. -->
+                        <Border Width="22" Height="22" CornerRadius="11" Background="{DynamicResource Accent}"
+                                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-2,-2"
+                                Visibility="{Binding IsSent, Converter={StaticResource Shown}}">
+                          <TextBlock Style="{StaticResource Glyph}" Text="&#xE73E;" FontSize="12"
+                                     Foreground="{DynamicResource OnAccent}" HorizontalAlignment="Center"
+                                     VerticalAlignment="Center" />
+                        </Border>
+                      </Grid>
+                      <TextBlock Style="{StaticResource Name}" Text="{Binding Name}" TextAlignment="Center"
+                                 TextWrapping="Wrap" FontSize="14" LineHeight="18" />
+                      <TextBlock Text="{Binding Status}" TextAlignment="Center" TextWrapping="Wrap">
+                        <TextBlock.Style>
+                          <Style TargetType="TextBlock" BasedOn="{StaticResource Figures}">
+                            <Style.Triggers>
+                              <DataTrigger Binding="{Binding IsProblem}" Value="True">
+                                <Setter Property="Foreground" Value="{DynamicResource Ember}" />
+                              </DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </TextBlock.Style>
+                      </TextBlock>
+                      <Border CornerRadius="10" Padding="14,5" Margin="0,8,0,0" HorizontalAlignment="Center"
+                              Background="{DynamicResource Accent}"
                               Visibility="{Binding ShowsSend, Converter={StaticResource Shown}}">
                         <TextBlock Text="Send" FontWeight="SemiBold" Foreground="{DynamicResource OnAccent}" />
                       </Border>
-                      <Button Grid.Column="2" Style="{StaticResource IconButton}" t:Plate.Glyph="&#xE711;"
-                              Margin="8,0,-4,0" Command="{Binding Stop}" ToolTip="Stop sending"
+                      <Button Style="{StaticResource IconButton}" t:Plate.Glyph="&#xE711;" Margin="0,4,0,-4"
+                              HorizontalAlignment="Center" Command="{Binding Stop}" ToolTip="Stop sending"
                               AutomationProperties.Name="{Binding StopName}"
                               Visibility="{Binding IsBusy, Converter={StaticResource Shown}}" />
-                      <TextBlock Grid.Column="2" Style="{StaticResource Glyph}" Text="&#xE73E;" FontSize="18"
-                                 Margin="12,0,6,0" Foreground="{DynamicResource AccentText}"
-                                 Visibility="{Binding IsSent, Converter={StaticResource Shown}}" />
-                    </Grid>
+                    </StackPanel>
                   </Button>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>

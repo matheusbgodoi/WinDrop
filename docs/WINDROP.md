@@ -33,6 +33,12 @@ Com o rádio desligado, o Wi-Fi do PC funciona normalmente:
 
 ![Rádio desligado](assets/app-radio-off.png)
 
+A lista de aparelhos foi redesenhada: um rosto redondo para cada aparelho, lado a lado, com o nome embaixo. Estas duas imagens são renderizações do próprio aplicativo com aparelhos de exemplo (`winawdl.exe --render`), ainda não instaladas:
+
+![Aparelhos por perto, tema escuro](assets/ui-nearby-dark.png)
+
+![Aparelhos por perto, tema claro](assets/ui-nearby-light.png)
+
 ## Como usar
 
 1. Abra o WinDrop pelo Menu Iniciar. Ele fica na bandeja, ao lado do relógio.
