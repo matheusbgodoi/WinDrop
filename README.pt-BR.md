@@ -45,7 +45,7 @@ Validado em 2026-11-16, em um desktop com a MT7902 (ASUS TUF GAMING A620M-PLUS W
 |---|---|---|---|
 | ![Arquivos prontos para enviar](docs/assets/ui-holding-dark.png) | ![Pedido de recebimento](docs/assets/ui-incoming-ask-dark.png) | ![Arquivo recebido](docs/assets/ui-received-dark.png) | ![Rádio desligado](docs/assets/ui-radio-off-dark.png) |
 
-Estas quatro são renderizações do próprio aplicativo com aparelhos de exemplo (`winawdl.exe --render`), feitas com a versão atual. O tema acompanha o Windows; em claro fica assim:
+Estas quatro são renderizações do próprio aplicativo (`winawdl.exe --render`) com a versão atual: os dois aparelhos são de exemplo, os arquivos são os de amostra deste repositório. O tema acompanha o Windows; em claro fica assim:
 
 <p align="center">
   <img src="docs/assets/ui-holding-light.png" width="300" alt="Tema claro">
@@ -68,6 +68,14 @@ Um envio real, do PC para um MacBook, pelo WinDrop instalado. Os quatro arquivos
 | ![Quatro arquivos prontos para enviar](docs/assets/demo-1-segurando.png) | ![Aguardando o aceite](docs/assets/demo-2-pedindo.png) | ![Sem resposta do aparelho](docs/assets/demo-sem-resposta.png) |
 
 As três telas são capturas da janela real, com o MacBook real na lista. Depois do aceite, os quatro arquivos apareceram em Downloads do Mac com os mesmos tamanhos em bytes dos originais (323165, 435805, 386271 e 120), a 1,6 MB/s. A terceira tela é de uma tentativa anterior, com a tela do Mac apagada.
+
+### O item do botão direito
+
+O WinDrop acrescenta um item ao menu do botão direito de qualquer arquivo. É isto que o Explorer lista para um JPEG no PC de teste, lido do próprio Explorer (sem os itens de outros programas):
+
+> Abrir · Imprimir · **Enviar via AirDrop** · Copiar como caminho · Compartilhar · Recortar · Copiar · Excluir · Renomear · Propriedades
+
+No Windows 11 ele fica no menu completo, em "Mostrar mais opções" (ou Shift + botão direito): o menu curto só aceita itens de aplicativos empacotados. Vários arquivos escolhidos de uma vez caem todos na mesma janela do WinDrop. Ainda não há imagem do menu aqui: não foi possível capturá-la sem controlar a área de trabalho de quem está no PC.
 
 ## Casos de uso
 

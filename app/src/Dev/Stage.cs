@@ -268,8 +268,8 @@ public static class Stage
     private static void Devices(World world)
     {
         Up(world);
-        world.Engine.Say(new { @event = "peer", id = "a", name = "Stand-in iPhone", model = "iPhone14,2" });
-        world.Engine.Say(new { @event = "peer", id = "b", name = "Stand-in MacBook", model = "MacBookPro18,3" });
+        world.Engine.Say(new { @event = "peer", id = "a", name = "Ana's iPhone", model = "iPhone14,2" });
+        world.Engine.Say(new { @event = "peer", id = "b", name = "Studio MacBook", model = "MacBookPro18,3" });
     }
 
     private static void Sending(World world, string[] files, object said)
@@ -282,7 +282,7 @@ public static class Stage
 
     private static void Asked(World world, bool waits) => world.Engine.Say(new
     {
-        @event = "asked", id = "r1", sender = "Stand-in iPhone", model = "iPhone14,2",
+        @event = "asked", id = "r1", sender = "Ana's iPhone", model = "iPhone14,2",
         files = new[]
         {
             new { name = "IMG_0001.jpg", size = 4_200_000, type = "public.jpeg" },
@@ -384,7 +384,7 @@ public static class Stage
             world.Engine.Say(new { @event = "answered", id = "r1", how = "declined" });
             world.Engine.Say(new
             {
-                @event = "asked", id = "r2", sender = "Stand-in MacBook", model = "MacBookPro18,3",
+                @event = "asked", id = "r2", sender = "Studio MacBook", model = "MacBookPro18,3",
                 files = Array.Empty<object>(), links = 1, waits = true,
             });
             world.Model.Incoming[0].Always!.Execute(null);
@@ -403,7 +403,7 @@ public static class Stage
         world.Model.Arrived += world.Model.Arrivals.Add;
         world.Engine.Say(new
         {
-            @event = "asked", id = "r0", sender = "Stand-in iPhone", model = "iPhone14,2", links = 0, waits = false,
+            @event = "asked", id = "r0", sender = "Ana's iPhone", model = "iPhone14,2", links = 0, waits = false,
             files = new[] { new { name = Path.GetFileName(files[0]), size = 58_706, type = "public.png" } },
         });
         world.Engine.Say(new
@@ -414,7 +414,7 @@ public static class Stage
         Asked(world, waits: true);
         world.Engine.Say(new
         {
-            @event = "asked", id = "r2", sender = "Stand-in MacBook", model = "MacBookPro18,3",
+            @event = "asked", id = "r2", sender = "Studio MacBook", model = "MacBookPro18,3",
             files = new[] { new { name = "IMG_0042.pvt", size = 0, type = "com.apple.private.live-photo-bundle" } },
             links = 0, total = 0, waits = true,
         });
@@ -469,7 +469,7 @@ public static class Stage
         world.Model.Arrived += world.Model.Arrivals.Add;
         world.Engine.Say(new
         {
-            @event = "asked", id = "r0", sender = "Stand-in iPhone", model = "iPhone14,2", links = 0, waits = false,
+            @event = "asked", id = "r0", sender = "Ana's iPhone", model = "iPhone14,2", links = 0, waits = false,
             files = new[] { new { name = Path.GetFileName(files[0]), size = 58_706, type = "public.png" } },
         });
         world.Engine.Say(new { @event = "stored", id = "r0", folder, names = new[] { Path.GetFileName(files[0]) } });
@@ -480,7 +480,7 @@ public static class Stage
         world.Engine.Say(new { @event = "send", id = "s1", state = "sending", done = 12_900_000, total = 96_100_000 });
         world.Engine.Say(new
         {
-            @event = "asked", id = "r1", sender = "Stand-in MacBook", model = "MacBookPro18,3",
+            @event = "asked", id = "r1", sender = "Studio MacBook", model = "MacBookPro18,3",
             files = new[]
             {
                 new { name = "IMG_0001.jpg", size = 4_200_000, type = "public.jpeg" },
@@ -542,6 +542,24 @@ public static class Stage
     public static string[] SampleFiles(string folder)
     {
         Directory.CreateDirectory(folder);
+        // With WINDROP_SAMPLES naming a folder of real files, the pictures show those: its images
+        // first, as the three that have thumbnails, then the rest. Five at least, or it is not used.
+        if (Environment.GetEnvironmentVariable("WINDROP_SAMPLES") is { Length: > 0 } real && Directory.Exists(real))
+        {
+            bool IsPicture(string file) => Path.GetExtension(file).ToLowerInvariant() is ".jpg" or ".jpeg" or ".png";
+            var given = Directory.GetFiles(real).OrderBy(file => !IsPicture(file)).ThenBy(Path.GetFileName).ToList();
+            if (given.Count >= 5 && given.Take(3).All(IsPicture))
+            {
+                var copies = new List<string>();
+                foreach (var file in given)
+                {
+                    var copy = Path.Combine(folder, Path.GetFileName(file));
+                    File.Copy(file, copy, overwrite: true);
+                    copies.Add(copy);
+                }
+                return [.. copies];
+            }
+        }
         (string Name, string From, string To)[] pictures =
         [
             ("stand-in-dune.png", "#E9B872", "#A63D40"), ("stand-in-sea.png", "#90A959", "#1F4E5F"),

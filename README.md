@@ -48,7 +48,7 @@ Validated on 2026-11-16 on a desktop with the MT7902 (ASUS TUF GAMING A620M-PLUS
 |---|---|---|---|
 | ![Files ready to send](docs/assets/ui-holding-dark.png) | ![An incoming request](docs/assets/ui-incoming-ask-dark.png) | ![A received file](docs/assets/ui-received-dark.png) | ![Radio off](docs/assets/ui-radio-off-dark.png) |
 
-These four are renders by the app itself with stand-in devices (`winawdl.exe --render`), made with the current version. The theme follows Windows; in light it looks like this:
+These four are renders by the app itself (`winawdl.exe --render`) with the current version: the two devices are stand-ins, the files are the sample files of this repository. The theme follows Windows; in light it looks like this:
 
 <p align="center">
   <img src="docs/assets/ui-holding-light.png" width="300" alt="Light theme">
@@ -71,6 +71,14 @@ A real send, from the PC to a MacBook, through the installed WinDrop. The four f
 | ![Four files ready to send](docs/assets/demo-1-segurando.png) | ![Waiting for the device](docs/assets/demo-2-pedindo.png) | ![No answer from the device](docs/assets/demo-sem-resposta.png) |
 
 All three are captures of the real window, with the real MacBook in the list. After it accepted, the four files were in the Mac's Downloads with the same sizes in bytes as the originals (323165, 435805, 386271 and 120), at 1.6 MB/s. The third screen is from an earlier attempt, with the Mac's screen off.
+
+### The right-click entry
+
+WinDrop adds one entry to the right-click menu of every file. This is what Explorer lists for a JPEG on the test PC, read from Explorer itself (other programs' entries left out):
+
+> Abrir · Imprimir · **Enviar via AirDrop** · Copiar como caminho · Compartilhar · Recortar · Copiar · Excluir · Renomear · Propriedades
+
+On Windows 11 it is in the full menu, under "Show more options" (or Shift + right-click): the short menu only takes entries from packaged apps. Several files chosen at once all land in the same WinDrop window. There is no picture of the menu here yet: it could not be captured without driving the desktop of the person at the PC.
 
 ## Use cases
 
