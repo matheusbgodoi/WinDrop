@@ -47,6 +47,22 @@ As três imagens acima são renderizações do próprio aplicativo com aparelhos
   <img src="docs/assets/app-radio-on.png" width="300" alt="WinDrop instalado, com um MacBook real na lista">
 </p>
 
+## Demonstração
+
+Um envio real, do PC para um MacBook, pelo WinDrop instalado. Os quatro arquivos estão em [docs/assets/samples](docs/assets/samples): três imagens geradas por IA para este fim e um arquivo de texto.
+
+<p align="center">
+  <img src="docs/assets/samples/praia.jpg" width="230" alt="Imagem de exemplo: praia">
+  <img src="docs/assets/samples/cafe.jpg" width="230" alt="Imagem de exemplo: café e caderno">
+  <img src="docs/assets/samples/cidade.jpg" width="230" alt="Imagem de exemplo: cidade ao entardecer">
+</p>
+
+| 1. Arquivos entregues ao WinDrop | 2. Pedido enviado, aguardando o aceite no Mac | Quando o aparelho não responde |
+|---|---|---|
+| ![Quatro arquivos prontos para enviar](docs/assets/demo-1-segurando.png) | ![Aguardando o aceite](docs/assets/demo-2-pedindo.png) | ![Sem resposta do aparelho](docs/assets/demo-sem-resposta.png) |
+
+As três telas são capturas da janela real, com o MacBook real na lista. Depois do aceite, os quatro arquivos apareceram em Downloads do Mac com os mesmos tamanhos em bytes dos originais (323165, 435805, 386271 e 120), a 1,6 MB/s. A terceira tela é de uma tentativa anterior, com a tela do Mac apagada.
+
 ## Casos de uso
 
 - **Do iPhone para o PC, sem cabo e sem nuvem.** Fotos e vídeos saem da folha de compartilhamento do iPhone direto para a pasta Downloads do Windows.

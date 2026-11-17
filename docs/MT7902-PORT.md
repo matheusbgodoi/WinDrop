@@ -165,6 +165,8 @@ Envios reais de um arquivo de 20 MB do PC para o MacBook, a cerca de 1 m, pelo W
 | VHT MCS 9, 80 MHz | `8109` | 2,3 MB/s |
 
 - Os dois bits acima do campo de taxa do chip passaram a carregar a largura do quadro (`MT7902_RATE_WIDE_80`), então a transmissão também pode sair em 80 MHz.
-- Padrão novo: `8107`. Neste PC ele vale pelo arquivo `%ProgramData%\winawdladio.rate`; o valor no código só entra na próxima instalação.
+- Padrão novo: `8107`. Neste PC ele vale pelo arquivo `%ProgramData%\winawdl
+adio.rate`; o valor no código só entra na próxima instalação.
 - Poucas amostras, um só aparelho, uma só distância. Não foi testado com o iPhone nesta taxa, e não há recuo automático: um aparelho que não ouça essa taxa não recebe nada. Em uma das tentativas o rádio não subiu, sem causa apurada.
 - O sentido contrário (Mac ou iPhone para o PC) não foi medido.
+- **Arquivos de demonstração.** `docs/assets/samples`: três imagens geradas pelo Codex CLI (modelo `gpt-6.1-terra`, com a ferramenta de imagem dele), convertidas para JPEG, e um texto. Enviados do PC ao MacBook pelo WinDrop instalado em 2026-11-16 às 23:05: 4 arquivos, 1,1 MB, 1,6 MB/s, tamanhos idênticos em Downloads do Mac. Uma tentativa antes foi recusada (401) e outra ficou sem resposta, com a tela do Mac apagada. Não foi gerado vídeo: não há `ffmpeg` nesta máquina.
