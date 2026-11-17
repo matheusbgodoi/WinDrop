@@ -46,9 +46,44 @@ BIND_ATTEMPTS = 5
 BIND_PAUSE_SECONDS = 2
 # Winsock's struct linger: enabled, zero seconds, which closes with a reset.
 LINGER_RESET = struct.pack('HH', 1, 0)
-# Version 1 with no codecs listed makes the sender convert to legacy formats
-# (JPEG, not HEIF). The key has to be present in both answers.
-MEDIA_CAPABILITIES = json.dumps({'Version': 1}).encode()
+# What a sender may send as it is. Version 1 with no codecs listed makes an
+# iPhone convert first: HEIF photos to JPEG, HEVC video to H.264, both smaller
+# than the originals. LEGACY_MEDIA is that answer.
+LEGACY_MEDIA = json.dumps({'Version': 1}).encode()
+
+
+def _hevc(profiles):
+    per_profile = {str(profile): {'VTMaxPlaybackLevel': 186, 'VTIsHardwareAccelerated': True,
+                                  'VTMaxDecodeLevel': 186} for profile in profiles}
+    return {'VTIsHDRAllowedOnDevice': True, 'VTSupportedProfiles': list(profiles),
+            'VTPerProfileSupport': per_profile}
+
+
+# The codecs and containers a Mac lists (read from one's /Discover answer), so
+# photos and videos arrive as the files they are on the sender: HEIC, HEVC and
+# ProRes included. Left out on purpose: the vendor entry and
+# SupportsAdjustmentBaseResources, which ask for Live Photo bundles and edit
+# histories, folders this receiver would not know what to do with.
+ORIGINAL_MEDIA = json.dumps({
+    'Version': 3,
+    'Codecs': {'hvc1': {
+        'Profiles': dict(_hevc((1, 2, 3, 4)), VTDoViIsHardwareAccelerated=True,
+                         VTDoViSupportedLevels=['%02d' % level for level in range(1, 10)],
+                         VTDoViSupportedProfiles=['05', '08']),
+        'CodecSupport': {
+            'VTIsHDRAllowedOnDevice': True,
+            'VTCodecSupportDict': dict(
+                {name: {'VTIsHardwareAccelerated': True}
+                 for name in ('apcs', 'apcn', 'apch', 'apco', 'ap4x', 'ap4h')},
+                hvc1=_hevc((1, 2, 3, 4))),
+        },
+    }},
+    'ContainerFormats': {'public.heif-standard': {'HeifSubtypes': [
+        'public.avci', 'public.avif', 'public.heic', 'public.heics', 'public.heif']}},
+}, separators=(',', ':')).encode()
+
+# The key has to be present in both answers.
+MEDIA_CAPABILITIES = ORIGINAL_MEDIA
 
 
 class HandshakeFailed(Exception):
