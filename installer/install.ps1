@@ -266,8 +266,17 @@ Step 'a task that runs the radio as LocalSystem when the app asks, with no quest
   $service.Connect()
   $task = $service.GetFolder('\').GetTask($RadioTask)
   $dacl = 4
-  # Read and run, for interactive users.
-  $task.SetSecurityDescriptor($task.GetSecurityDescriptor($dacl) + '(A;;GRGX;;;IU)', 0)
+  # Read and run, for the account that installs and no other: the task runs as LocalSystem.
+  $me = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+  $task.SetSecurityDescriptor($task.GetSecurityDescriptor($dacl) + "(A;;GRGX;;;$me)", 0)
+  # The request the task reads and the logs it writes: LocalSystem and administrators in full,
+  # that account to change, nobody else at all, and nothing inherited from ProgramData.
+  $data = Join-Path $env:ProgramData 'winawdl'
+  New-Item -ItemType Directory -Force (Join-Path $data 'logs') | Out-Null
+  $icacls = Join-Path $env:SystemRoot 'System32\icacls.exe'
+  & $icacls $data /inheritance:r /grant:r '*S-1-5-18:(OI)(CI)F' '*S-1-5-32-544:(OI)(CI)F' "*${me}:(OI)(CI)M" /Q | Out-Null
+  # What is already inside takes the folder's rules, and only those.
+  & $icacls (Join-Path $data '*') /reset /T /C /Q | Out-Null
 }
 
 if ($Setup) {

@@ -117,6 +117,22 @@ public static class RadioSupervisor
 
     public static string RadioProgram(string root) =>
         Found(root, @"radio\radiod.exe", @"mt7902\build\radiod.exe");
+    /// <summary>The data rate to use: DataRate, unless radio.rate beside the logs' folder names
+    /// another in the chip's encoding. For trying rates without building again; nothing but two or
+    /// three hexadecimal digits is taken from it.</summary>
+    private static string ChosenRate()
+    {
+        try
+        {
+            var asked = File.ReadAllText(Path.Combine(Path.GetDirectoryName(LogFolder)!, "radio.rate")).Trim();
+            if (System.Text.RegularExpressions.Regex.IsMatch(asked, "^[0-9a-f]{2,3}$")) return asked;
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        {
+        }
+        return DataRate;
+    }
+
     /// <summary>MediaTek's firmware for the card: the patch, then the image that runs.</summary>
     public static string[] Firmware(string root) =>
     [
@@ -142,7 +158,7 @@ public static class RadioSupervisor
         var (card, inf) = CardFor(root);
         // The same two commands scripts\mt7902-awdl.ps1 runs; 0 is "until stopped".
         return Supervise(owner, arguments[1],
-                         new Daemon("radio", RadioProgram(root), [.. Firmware(root), Channel, "0", DataRate]),
+                         new Daemon("radio", RadioProgram(root), [.. Firmware(root), Channel, "0", ChosenRate()]),
                          new Daemon("awdld", AwdlProgram(root), ["-c", Channel, "-s", "1"]),
                          LogFolder, card, inf, scope: scope);
     }
