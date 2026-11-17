@@ -13,7 +13,7 @@
     <DataTemplate x:Key="Whose">
       <StackPanel Orientation="Horizontal">
         <Image Width="16" Height="16" Margin="0,0,8,0" Source="{x:Static v:RequestsView.Mark}" />
-        <TextBlock Style="{StaticResource Soft}" Text="winawdl" VerticalAlignment="Center" />
+        <TextBlock Style="{StaticResource Soft}" Text="WinDrop" VerticalAlignment="Center" />
       </StackPanel>
     </DataTemplate>
   </UserControl.Resources>

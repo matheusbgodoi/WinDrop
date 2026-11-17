@@ -244,7 +244,25 @@ public sealed class WindowsCard : ICard
             if (taken) added++;
             else if (added == 0) break; // the service never took one: the rest would not go either
         }
-        return $"brought back {added} of {files.Count} saved networks from adapter {source}";
+        // Windows takes its time to join a network of an adapter it has just met: asked for outright,
+        // the one used last first. netsh refuses a network that is out of range, so the first it takes is it.
+        var joined = "";
+        foreach (var file in Enumerable.Reverse(files))
+        {
+            string? network;
+            try
+            {
+                network = XDocument.Load(file.FullName).Root?.Elements().FirstOrDefault(one => one.Name.LocalName == "name")?.Value;
+            }
+            catch (Exception error) when (error is System.Xml.XmlException or IOException)
+            {
+                continue;
+            }
+            if (network is null || Netsh("wlan", "connect", $"name={network}", $"interface={name}") != 0) continue;
+            joined = "; asked Windows to join the one in range that was used last";
+            break;
+        }
+        return $"brought back {added} of {files.Count} saved networks from adapter {source}{joined}";
     }
 
     private static int Netsh(params string[] arguments)

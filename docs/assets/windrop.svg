@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="WinDrop">
+  <!-- The WinDrop mark: a drop that carries a signal. An original drawing;
+       tools/make-icon.py draws the same shapes into app/winawdl.ico. -->
+  <defs>
+    <linearGradient id="plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5AC1FF"/>
+      <stop offset="1" stop-color="#0B6BFF"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#plate)"/>
+  <!-- the drop: a point at the top, a circle of radius 62 around (128, 148) -->
+  <path d="M128 40 C 150 78, 190 104, 190 148 A 62 62 0 0 1 66 148 C 66 104, 106 78, 128 40 Z" fill="#FFFFFF"/>
+  <!-- the signal inside it: two arcs opening upward and their source -->
+  <g fill="none" stroke="#0B6BFF" stroke-width="11" stroke-linecap="round">
+    <path d="M94 150 A 34 34 0 0 1 162 150"/>
+    <path d="M111 152 A 17 17 0 0 1 145 152"/>
+  </g>
+  <circle cx="128" cy="172" r="9" fill="#0B6BFF"/>
+</svg>

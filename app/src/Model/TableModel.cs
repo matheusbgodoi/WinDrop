@@ -13,7 +13,7 @@ public enum Across { EngineDown, RadioOff, RadioStarting, RadioProblem, Nearby }
 /// want to send, and the files on this side.</summary>
 public sealed class TableModel : Observable
 {
-    public const string Project = "https://github.com/raph559/winawdl";
+    public const string Project = "https://github.com/matheusbgodoi/winawdl-mt7902";
     private const int MostReceived = 24;
     public const int MostTrayText = 127;
     private static readonly TimeSpan SentShownFor = TimeSpan.FromSeconds(4);
@@ -92,7 +92,7 @@ public sealed class TableModel : Observable
     public event Action<ArrivalModel>? Arrived;
 
     public string Version { get; } =
-        "winawdl " + (Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "");
+        "WinDrop " + (Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "");
 
     public string Name => _settings.Name ?? Environment.MachineName;
     public string Folder => _settings.Folder ??
@@ -170,7 +170,7 @@ public sealed class TableModel : Observable
             RadioPhase.WifiLeftOff => $"{_radio.LastLine} Restarting the PC also gives it back.",
             RadioPhase.NotBuilt => _radio.FromSource
                 ? "Run scripts\\build-radio.ps1 and scripts\\build-awdl.ps1 in the repository, then try again."
-                : "This copy of winawdl is incomplete. Install it again.",
+                : "This copy of WinDrop is incomplete. Install it again.",
             _ => _radio.LastLine.Length > 0 ? _radio.LastLine : "It left nothing in its log.",
         },
         _ => _radio.Phase switch

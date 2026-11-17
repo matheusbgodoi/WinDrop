@@ -24,7 +24,7 @@ public sealed class MainWindow : Window
         _model = model;
         _theme = theme;
         _settings = settings;
-        Title = "winawdl";
+        Title = "WinDrop";
         Width = 460;
         Height = 720;
         MinWidth = SmallestWidth;
@@ -133,7 +133,7 @@ public sealed class Tray : IDisposable
         _window = window;
         _model = model;
         _menu = new ContextMenu { Placement = PlacementMode.MousePoint };
-        _menu.Items.Add(Item("Open winawdl", window.Surface));
+        _menu.Items.Add(Item("Open WinDrop", window.Surface));
         if (model is not null)
         {
             // The switch of the window, within reach while the window is closed.
@@ -142,7 +142,7 @@ public sealed class Tray : IDisposable
             _menu.Items.Add(_radioSwitch);
         }
         _menu.Items.Add(Item("Quit", quit));
-        _icon = new System.Windows.Forms.NotifyIcon { Text = "winawdl", Icon = Mark(), Visible = true };
+        _icon = new System.Windows.Forms.NotifyIcon { Text = "WinDrop", Icon = Mark(), Visible = true };
         _icon.MouseClick += (_, click) =>
         {
             if (click.Button == System.Windows.Forms.MouseButtons.Left) window.Surface();
@@ -204,7 +204,7 @@ public sealed class Tray : IDisposable
     public void Say(string text, Action? onPress = null)
     {
         _onNotice = onPress;
-        _icon.ShowBalloonTip(5000, "winawdl", text, System.Windows.Forms.ToolTipIcon.None);
+        _icon.ShowBalloonTip(5000, "WinDrop", text, System.Windows.Forms.ToolTipIcon.None);
     }
 
     public void Dispose()

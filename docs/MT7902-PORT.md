@@ -1,6 +1,6 @@
 # Port do winawdl para a MediaTek MT7902
 
-Status: 2026-11-16. Fases 0 a 6 concluídas: AirDrop validado nos dois sentidos com o MacBook e com o iPhone. Fase 7 em andamento: o aplicativo recebe, envia, tem o botão direito e a chave na bandeja, mas ainda não sobe o rádio nem troca o driver sozinho nesta máquina. OFDM em 2,4 GHz ainda não sai. Wi-Fi e AirDrop ainda não convivem: a placa faz um ou outro.
+Status: 2026-11-16. Fases 0 a 6 concluídas: AirDrop validado nos dois sentidos com o MacBook e com o iPhone. Fase 7 quase completa: o aplicativo (agora WinDrop, ver [WINDROP.md](WINDROP.md)) está instalado, com botão direito, chave na bandeja e troca de driver; falta refazer o logon para o rádio subir por ele. Wi-Fi e AirDrop não funcionam ao mesmo tempo no PC. OFDM em 2,4 GHz ainda não sai.
 
 ## Registro de resultados
 
@@ -16,6 +16,7 @@ Status: 2026-11-16. Fases 0 a 6 concluídas: AirDrop validado nos dois sentidos 
 | 2026-11-16 | 6 | Mac para PC aprovado: uma imagem de 104425 bytes arrastada no AirDrop do Mac chegou em Downloads pelo aplicativo (`POST /Ask` e `POST /Upload` com 200). Falta o iPhone nos dois sentidos |
 | 2026-11-16 | 7 | Parcial. O aplicativo WPF do winawdl, apontado para `radiod`, mostra o MacBook, recebe e segura arquivos. Novos: "Enviar via AirDrop" no botão direito (`app/src/Shell/SendMenu.cs`, registro em HKCU, arquivos repassados à instância aberta por pipe) e a chave "AirDrop" no menu da bandeja. Conferido por captura da janela (`scripts/app-shot.ps1`). O liga/desliga ainda não sobe o rádio sozinho nesta máquina: falta novo logon para o direito "Bloquear páginas na memória" valer |
 | 2026-11-16 | 6 | Aprovada. iPhone para PC: uma foto de 105043 bytes recebida pelo aplicativo. PC para iPhone: `sender.py --to iPhone` achou o aparelho, o pedido foi aceito e o arquivo enviado. Para o iPhone foi preciso anunciar um fluxo espacial (`awdld -s 1`) |
+| 2026-11-16 | 7 | Cópia instalada em `C:\Program Files\winawdl`. Driver de desenvolvimento e executor SYSTEM removidos; a placa voltou ao driver da MediaTek e o Wi-Fi conectou (canal 157, 802.11ac) depois de as 8 redes salvas serem trazidas da identidade antiga do adaptador. A chave Radio, acionada por automação (`scripts/app-radio-switch.ps1`), pegou a placa, o `radiod` parou com "this account may not lock pages in memory" e a placa foi devolvida (`wifi: back`). Falta o novo logon para o direito valer |
 
 Observações da fase 4:
 
@@ -138,3 +139,4 @@ O daemon AWDL continua GPL-3.0 (OWL) em processo separado, como no projeto origi
 - **Recepção em 80 MHz.** Em 5 GHz o rádio agora escuta o bloco de 80 MHz do canal (centro 155 para o 149) e diz isso no `HELLO`; a transmissão segue em 20 MHz. Sozinha, essa mudança não resolveu o iPhone, e fez subir muito a contagem de quadros com soma de verificação errada (centenas a cada 15 s), o que ainda não foi investigado.
 - **Risco aberto, memória para DMA.** Uma vez o rádio não subiu com "not enough free memory below 4 GiB for the DMA slab"; na tentativa seguinte subiu. A busca por páginas físicas abaixo de 4 GiB pode falhar com a memória baixa ocupada.
 - `radiod` aceita um intervalo de relatório: a cada N segundos imprime quem foi ouvido, com sinal, quadros de ação, dados para o PC e repetições. Foi o que mostrou o problema do iPhone.
+- **Redes Wi-Fi salvas.** Trocar o driver dá ao adaptador uma identidade nova e as redes salvas ficam na pasta da antiga. O fluxo de desenvolvimento (scripts) não as trazia de volta; foram recuperadas com `netsh wlan add profile`. A cópia instalada já faz isso ao devolver a placa e agora também pede ao Windows para entrar na rede usada por último, porque sozinho ele não reconectou.

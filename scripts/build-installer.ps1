@@ -86,7 +86,8 @@ if ($LASTEXITCODE -ne 0) { throw "Inf2Cat failed ($LASTEXITCODE)" }
 
 # What ships must not say who built it, or where.
 $account = $env:USERNAME
-$telling = Get-ChildItem $stage -Recurse -File | Where-Object {
+# SOURCE.txt names the fork's repository on purpose, and that carries its owner's name.
+$telling = Get-ChildItem $stage -Recurse -File | Where-Object Name -ne 'SOURCE.txt' | Where-Object {
   $bytes = [IO.File]::ReadAllBytes($_.FullName)
   foreach ($encoding in [Text.Encoding]::GetEncoding(28591), [Text.Encoding]::Unicode) {
     if ($encoding.GetString($bytes).IndexOf($account, [StringComparison]::OrdinalIgnoreCase) -ge 0) { return $true }

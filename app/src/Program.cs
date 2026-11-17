@@ -83,7 +83,7 @@ public static class Program
             if (settings.TrayNoticeShown) return;
             settings.TrayNoticeShown = true;
             settings.Save();
-            tray.Say("winawdl is still receiving. Open it or quit it from this icon.");
+            tray.Say("WinDrop is still receiving. Open it or quit it from this icon.");
         };
         var requests = new RequestWindow(model, () => window.IsActive);
         window.Activated += (_, _) => requests.Reconsider();
@@ -126,7 +126,7 @@ public static class Program
     {
         var report = Path.Combine(Repo.DataFolder, "crash.log");
         File.AppendAllText(report, $"{DateTime.Now:u}\n{e.Exception}\n\n");
-        MessageBox.Show($"winawdl has to close because of an error. What happened is written in\n{report}",
-                        "winawdl", MessageBoxButton.OK, MessageBoxImage.Error);
+        MessageBox.Show($"WinDrop has to close because of an error. What happened is written in\n{report}",
+                        "WinDrop", MessageBoxButton.OK, MessageBoxImage.Error);
     }
 }

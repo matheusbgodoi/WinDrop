@@ -427,7 +427,7 @@
                 <StackPanel>
                   <TextBlock Text="Show requests and arrivals on screen" TextWrapping="Wrap" />
                   <TextBlock Style="{StaticResource Soft}"
-                             Text="As cards in the corner, while winawdl is not the window in front." />
+                             Text="As cards in the corner, while WinDrop is not the window in front." />
                 </StackPanel>
               </CheckBox>
 
