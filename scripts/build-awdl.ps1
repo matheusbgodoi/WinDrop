@@ -4,8 +4,14 @@ $ErrorActionPreference = 'Stop'
 
 $repo  = Split-Path $PSScriptRoot -Parent
 $build = "$repo\build\awdl"
-$mingw = 'C:\Strawberry\c\bin'
-if (-not (Test-Path "$mingw\gcc.exe")) { throw "MinGW-w64 GCC not found in $mingw" }
+# Strawberry Perl's compiler, or WinLibs as winget installs it for one user.
+$mingw = @('C:\Strawberry\c\bin') +
+    @(Get-ChildItem "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\BrechtSanders.WinLibs*\mingw64\bin" `
+        -ErrorAction SilentlyContinue | ForEach-Object FullName) |
+    Where-Object { Test-Path "$_\gcc.exe" } | Select-Object -First 1
+if (-not $mingw) {
+  throw 'MinGW-w64 GCC not found: winget install BrechtSanders.WinLibs.POSIX.UCRT --scope user'
+}
 if (-not (Test-Path "$repo\upstream\owl\radiotap\radiotap.c")) {
   throw 'OWL radiotap sources missing: run "git -C upstream/owl submodule update --init radiotap".'
 }

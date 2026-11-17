@@ -1,6 +1,6 @@
 # Port do winawdl para a MediaTek MT7902
 
-Status: 2026-11-16. Fases 0 a 3 concluídas, fase 4 aprovada em 5 GHz. A placa recebe em modo monitor e transmite a 1 Mb/s em 2,4 GHz e a 6 Mb/s (OFDM) em 5 GHz, com o MacBook como testemunha. OFDM em 2,4 GHz ainda não sai.
+Status: 2026-11-16. Fases 0 a 5 concluídas. O daemon AWDL do winawdl roda sobre a MT7902 no canal 149, sincroniza com o MacBook e troca tráfego IPv6 com ele. OFDM em 2,4 GHz ainda não sai. Faltam o AirDrop (fase 6) e a integração no Windows (fase 7).
 
 ## Registro de resultados
 
@@ -11,6 +11,7 @@ Status: 2026-11-16. Fases 0 a 3 concluídas, fase 4 aprovada em 5 GHz. A placa r
 | 2026-11-16 | 3 | Aprovada. `mt7902/rxtest` em modo sniffer: canal 6 com 97 a 180 quadros em 4 a 5 s (beacons, dados, quadros de ação AWDL de aparelhos Apple), canal 44 com 14 quadros, canal 149 com 1583 quadros. Primeiro quadro entre 16 e 266 ms. MAC lido do chip, 1 fluxo espacial, 2,4 e 5 GHz |
 | 2026-11-16 | 4 | Parcial. `mt7902/txtest` envia pedidos de sondagem em broadcast. A 1 Mb/s (CCK) no canal 6, 15 a 22 respostas de pontos de acesso vizinhos voltaram endereçadas ao MAC da placa, o que prova a transmissão no ar. A 6 Mb/s (OFDM), nos canais 6 e 157, nenhuma resposta |
 | 2026-11-16 | 4 | Aprovada em 5 GHz. Com o MacBook em modo monitor como testemunha, 30 de 30 pedidos de sondagem a 6 Mb/s OFDM no canal 149 foram capturados. Em 2,4 GHz só 1 Mb/s sai no ar |
+| 2026-11-16 | 5 | Aprovada. `mt7902/radiod` serve o protocolo `radio/radio_link.h`; o `awdld` do winawdl, sem alteração, roda sobre ele no canal 149. Achou o MacBook e outro aparelho Apple, elegeu mestre de sincronismo, criou a interface `awdl0` (Wintun) e `ping -6` ao endereço link-local do `awdl0` do Mac teve 10 de 10 respostas (6 a 456 ms, média 218 ms) |
 
 Observações da fase 4:
 
@@ -114,3 +115,11 @@ do que o firmware aceita fazer.
 
 O código novo do rádio deriva do mt76 (BSD-3-Clause-Clear) e não do devourer (GPL-2.0).
 O daemon AWDL continua GPL-3.0 (OWL) em processo separado, como no projeto original.
+
+## Notas da fase 5
+
+- O daemon de rádio é um laço único que alterna entre os anéis da placa e o pipe. Taxas fixas por enquanto: 6 Mb/s para gerência e multicast, 24 Mb/s para dados unicast em 5 GHz, 1 Mb/s em 2,4 GHz. Sem agregação, sem block ack e sem adaptação de taxa, que o rádio Realtek do winawdl tem. Isso limita a velocidade de transferência e é o próximo ponto de desempenho.
+- `RADIO_LINK_SET_ADDRESS` reenvia `DEV_INFO_ACTIVE` com o endereço AWDL, para a placa reconhecer e confirmar quadros enviados a ele.
+- Para rodar os dois daemons como LocalSystem pelo executor, `mt7902/detach` inicia um programa da pasta de build em segundo plano. `awdld.exe` e `wintun.dll` precisam ser copiados para `mt7902uild`.
+- A latência do ping varia muito (6 a 456 ms), coerente com o rádio parado em um só canal enquanto o Mac alterna entre canais.
+- Dependências novas na máquina: MinGW-w64 (WinLibs, via winget, escopo do usuário) e Wintun 0.14.1 em `deps\wintun`.
