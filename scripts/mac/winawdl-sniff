@@ -3,12 +3,16 @@
 # time, then gives the Wi-Fi back. Runs as root through a sudoers rule that
 # allows this script alone, so every argument is checked and every path fixed.
 #   winawdl-sniff <channel> <seconds, 1 to 60> <station mac>
-# The Mac is off its network while this runs. Whatever happens, the exit trap
-# power-cycles the Wi-Fi, which makes macOS rejoin its usual network.
+# The Mac is off its network while this runs, and macOS only rejoins by itself
+# with the screen unlocked: keep it awake (caffeinate -d -u) while testing.
+# Getting it back is done twice
+# over: the exit trap power-cycles the Wi-Fi until it has a link again, and a
+# detached watchdog turns the Wi-Fi on later even if this script dies.
 set -u
 PATH=/usr/bin:/bin:/usr/sbin:/sbin
 home=/usr/local/winawdl
 out=$home/capture/last.pcap
+log=$home/capture/last.log
 
 [[ $# -eq 3 ]] || exit 2
 channel=$1 seconds=$2 mac=$3
@@ -16,22 +20,44 @@ channel=$1 seconds=$2 mac=$3
 [[ $mac =~ ^([0-9a-f]{2}:){5}[0-9a-f]{2}$ ]] || exit 2
 ((seconds >= 1 && seconds <= 60)) || exit 2
 
+note() { echo "$(date +%T) $*" >>"$log"; }
+linked() { ifconfig en0 | grep -q 'status: active'; }
+
 restore() {
+  trap '' HUP INT TERM
   [[ -n ${pid:-} ]] && kill "$pid" 2>/dev/null
-  networksetup -setairportpower en0 off
-  sleep 1
-  networksetup -setairportpower en0 on
+  for attempt in 1 2 3; do
+    note "restore attempt $attempt"
+    networksetup -setairportpower en0 off
+    sleep 3
+    networksetup -setairportpower en0 on
+    for _ in $(seq 30); do
+      sleep 2
+      linked && { note "link is back"; return; }
+    done
+  done
+  note "gave up: Wi-Fi is on but has no link"
 }
+
+: >"$log"
+note "channel $channel, $seconds s, station $mac"
+(
+  trap '' HUP INT TERM
+  sleep $((seconds + 150))
+  linked || networksetup -setairportpower en0 on
+) >/dev/null 2>&1 &
 trap restore EXIT
 trap 'exit 1' HUP INT TERM
 
 rm -f "$out"
-"$home/winawdl-chan" "$channel" || exit 3
-tcpdump -I -i en0 -w "$out" "wlan addr1 $mac or wlan addr2 $mac" 2>/dev/null &
+"$home/winawdl-chan" "$channel" 2>>"$log" || { note "channel set failed"; exit 3; }
+tcpdump -I -i en0 -w "$out" "wlan addr1 $mac or wlan addr2 $mac" 2>>"$log" &
 pid=$!
 sleep 1
-"$home/winawdl-chan" "$channel"
+"$home/winawdl-chan" "$channel" 2>>"$log"
+note "capturing on channel $("$home/winawdl-chan")"
 sleep "$seconds"
+note "ending on channel $("$home/winawdl-chan")"
 kill "$pid" 2>/dev/null
 wait "$pid" 2>/dev/null
 pid=

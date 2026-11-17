@@ -1,6 +1,6 @@
 # Port do winawdl para a MediaTek MT7902
 
-Status: 2026-11-16. Fases 0 a 3 concluídas, fase 4 parcial. A placa recebe em modo monitor e transmite a 1 Mb/s. A transmissão em OFDM ainda não funciona.
+Status: 2026-11-16. Fases 0 a 3 concluídas, fase 4 aprovada em 5 GHz. A placa recebe em modo monitor e transmite a 1 Mb/s em 2,4 GHz e a 6 Mb/s (OFDM) em 5 GHz, com o MacBook como testemunha. OFDM em 2,4 GHz ainda não sai.
 
 ## Registro de resultados
 
@@ -10,11 +10,18 @@ Status: 2026-11-16. Fases 0 a 3 concluídas, fase 4 parcial. A placa recebe em m
 | 2026-11-16 | 2 | Aprovada. `mt7902/fwboot` executou reset, anéis WFDMA por polling, patch (1 seção) e RAM (4 regiões, build 20251212032127). `MT_CONN_ON_MISC` passou de `0x0` para `0x3` (firmware pronto). DMA a partir de 512 páginas de 4 KiB abaixo de 4 GiB |
 | 2026-11-16 | 3 | Aprovada. `mt7902/rxtest` em modo sniffer: canal 6 com 97 a 180 quadros em 4 a 5 s (beacons, dados, quadros de ação AWDL de aparelhos Apple), canal 44 com 14 quadros, canal 149 com 1583 quadros. Primeiro quadro entre 16 e 266 ms. MAC lido do chip, 1 fluxo espacial, 2,4 e 5 GHz |
 | 2026-11-16 | 4 | Parcial. `mt7902/txtest` envia pedidos de sondagem em broadcast. A 1 Mb/s (CCK) no canal 6, 15 a 22 respostas de pontos de acesso vizinhos voltaram endereçadas ao MAC da placa, o que prova a transmissão no ar. A 6 Mb/s (OFDM), nos canais 6 e 157, nenhuma resposta |
+| 2026-11-16 | 4 | Aprovada em 5 GHz. Com o MacBook em modo monitor como testemunha, 30 de 30 pedidos de sondagem a 6 Mb/s OFDM no canal 149 foram capturados. Em 2,4 GHz só 1 Mb/s sai no ar |
 
 Observações da fase 4:
 
-- **Risco aberto, OFDM não sai no ar.** Com a mesma montagem de quadro, 1 Mb/s funciona e 6 Mb/s não, em 2,4 e em 5 GHz. A codificação da taxa confere com a do mt76 (`0x4b`). Já enviados sem efeito: domínio de canais (`SET_CHAN_DOMAIN`), tabela de potência por taxa (`SET_RATE_TX_POWER`) e modos de PHY no `BSS_INFO`. O AWDL usa OFDM, então a fase 5 depende disto.
-- O relatório de liberação de TX do firmware diz "entregue" para quadros que ninguém respondeu, então não serve de testemunha. Falta uma testemunha independente em 5 GHz. O MacBook em modo monitor serviria, mas isso derruba o Wi-Fi dele e a sessão SSH.
+- **Testemunha independente.** `scripts/sniff-test.ps1` roda o `txtest` enquanto o MacBook captura em modo monitor por tempo fixo (`scripts/mac/`, instalado com uma regra de sudoers restrita a um script). Resultados do Mac, a cerca de 1 m:
+  - canal 6, 1 Mb/s: 18 quadros da placa, -39 dBm;
+  - canal 149, 6 Mb/s OFDM: 30 de 30 quadros, `6.0 Mb/s 5745 MHz 11a`, -46 dBm;
+  - canal 6, 6 Mb/s OFDM: nenhum quadro em 1454 recebidos pelo filtro.
+- **OFDM funciona em 5 GHz.** A captura acima veio depois de três mudanças: tipo e subtipo do quadro na palavra 7 do TXD, índice de extensão espacial 24 e o passo de `mt792x_mac_init` (`TMAC_CTCR0` e limiar de RTS por `PROTECT_CTRL`). Não foi isolado qual delas importa, e antes não havia testemunha em 5 GHz, então é possível que já funcionasse. A falta de respostas no canal 157 não provava nada.
+- **Risco aberto, OFDM em 2,4 GHz não sai no ar.** Mesma montagem, só muda o canal. Suspeita não testada: proteção ERP. Afeta o canal 6 do AWDL, não os canais 44 e 149.
+- O relatório de liberação de TX do firmware diz "entregue" para quadros que não saíram (canal 6 OFDM), então não serve de testemunha.
+- **O Mac demora a voltar à rede depois da captura.** Em duas das cinco capturas voltou sozinho em menos de 40 s; nas outras ficou minutos sem enlace, mesmo com o ciclo de desligar e ligar o Wi-Fi e com a tela acordada, e foi preciso reconectar à mão. Causa desconhecida. Por isso o farejador deve ser usado o mínimo possível.
 - Quadros unicast com ACK pedido ficaram sem notificação de liberação no teste a 1 Mb/s. Não investigado.
 - **Comandos em rajada derrubam o firmware.** Vários comandos sem resposta seguidos (a tabela de potência são 8) fazem o firmware pedir parada de DMA, de forma determinística. O mt76 lê um registrador pelo firmware depois de cada um, e o porte faz o mesmo (`mcu_sync`). Isso pode estar ligado ao erro aleatório depois do boot.
 - Caminho de TX: anel 0, descritor de 32 bytes mais lista de páginas no buffer do anel, apontando para o quadro no mesmo buffer. O token é o índice do descritor.
