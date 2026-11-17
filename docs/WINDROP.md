@@ -33,7 +33,7 @@ Com o rádio desligado, o Wi-Fi do PC funciona normalmente:
 
 ![Rádio desligado](assets/app-radio-off.png)
 
-A lista de aparelhos foi redesenhada: um rosto redondo para cada aparelho, lado a lado, com o nome embaixo. Estas duas imagens são renderizações do próprio aplicativo com aparelhos de exemplo (`winawdl.exe --render`), ainda não instaladas:
+A lista de aparelhos foi redesenhada: um rosto redondo para cada aparelho, lado a lado, com o nome embaixo. Estas duas imagens são renderizações do próprio aplicativo com aparelhos de exemplo (`winawdl.exe --render`); a captura "Rádio ligado" acima é da cópia instalada, com o MacBook real:
 
 ![Aparelhos por perto, tema escuro](assets/ui-nearby-dark.png)
 
@@ -45,7 +45,8 @@ A lista de aparelhos foi redesenhada: um rosto redondo para cada aparelho, lado 
 2. Ligue a chave **Radio** (na janela, ou em **AirDrop** no menu do ícone da bandeja). Não há pergunta do Windows: uma tarefa do sistema troca o driver da placa e sobe o rádio.
 3. Para enviar: botão direito em um arquivo no Explorer, **Enviar via AirDrop**, e clique no aparelho. Também dá para arrastar arquivos para a janela.
 4. Para receber: no iPhone ou no Mac, escolha o PC no AirDrop. O arquivo vai para Downloads e o WinDrop avisa no canto da tela.
-5. Desligue a chave para o Wi-Fi voltar. As redes salvas são trazidas de volta e o WinDrop pede ao Windows para entrar na última usada.
+5. Para o WinDrop já subir com o Windows, sem janela e recebendo, marque **Start with Windows, radio on** no menu do ícone da bandeja. Neste PC isso está ligado.
+6. Desligue a chave para o Wi-Fi voltar. As redes salvas são trazidas de volta e o WinDrop pede ao Windows para entrar na última usada.
 
 No iPhone, o AirDrop precisa estar em "Todos por 10 minutos", com a tela acesa: o PC não é um contato da conta iCloud.
 
