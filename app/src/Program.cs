@@ -117,7 +117,9 @@ public static class Program
         }));
         model.StartTheEngine();
         if (files.Count > 0) model.Hold(files);
-        window.Show();
+        // Started by Windows at sign-in: in the notification area only, and receiving.
+        if (args.Contains(Autostart.Flag)) model.RadioOn = true;
+        else window.Show();
         app.Run();
         engine.Stop();
         radio.Stop();

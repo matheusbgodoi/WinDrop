@@ -140,6 +140,12 @@ public sealed class Tray : IDisposable
             _radioSwitch = new MenuItem { Header = "AirDrop", IsCheckable = true, IsChecked = model.RadioOn };
             _radioSwitch.Click += (_, _) => model.RadioOn = _radioSwitch.IsChecked;
             _menu.Items.Add(_radioSwitch);
+            var withWindows = new MenuItem
+            {
+                Header = "Start with Windows, radio on", IsCheckable = true, IsChecked = Autostart.Enabled,
+            };
+            withWindows.Click += (_, _) => Autostart.Enabled = withWindows.IsChecked;
+            _menu.Items.Add(withWindows);
         }
         _menu.Items.Add(Item("Quit", quit));
         _icon = new System.Windows.Forms.NotifyIcon { Text = "WinDrop", Icon = Mark(), Visible = true };
