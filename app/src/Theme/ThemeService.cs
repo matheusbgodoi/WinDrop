@@ -28,10 +28,9 @@ public sealed class ThemeService
 
     public static Rgb SystemAccent()
     {
-        // The value is stored as alpha, blue, green, red.
-        if (Registry.CurrentUser.OpenSubKey(Dwm)?.GetValue("AccentColor") is int stored)
-            return new Rgb((byte)stored, (byte)(stored >> 8), (byte)(stored >> 16));
-        return WindowsBlue;
+        // WinDrop keeps one blue, the one of its mark, whatever accent Windows is set to: the
+        // switch, the Send buttons and the faces of devices then read as one family.
+        return new Rgb(0x0A, 0x84, 0xFF);
     }
 
     public static bool AppsAreDark() =>
