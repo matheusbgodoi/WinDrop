@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: BSD-3-Clause-Clear */
+/* SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0 */
 /* MT7902 register offsets and bits, taken from mt76 (mt792x_regs.h,
  * mt7921/regs.h, dma.h, mt76_connac_mcu.h). Offsets below 0x100000 are final
  * BAR0 offsets; chip addresses above that go through mt7902_reg_addr(). */

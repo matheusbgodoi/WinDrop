@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: BSD-3-Clause-Clear */
+/* SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0 */
 /* Test client for the radio daemon: connects to its pipe, optionally asks for
  * AWDL frames only, counts what arrives and sends a few probe requests.
  *   radioclient <seconds> [awdl] */

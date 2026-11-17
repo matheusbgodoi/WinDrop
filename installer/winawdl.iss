@@ -16,11 +16,11 @@
 
 [Setup]
 AppId={{6B0F6E0C-6C5E-4E0B-9B5C-5D7E7C0A2A31}
-AppName=winawdl
+AppName=WinDrop
 AppVersion={#Version}
 AppVerName=winawdl {#Version}
-AppPublisher=winawdl project
-AppPublisherURL=https://github.com/raph559/winawdl
+AppPublisher=WinDrop (fork of winawdl)
+AppPublisherURL=https://github.com/matheusbgodoi/WinDrop
 AppSupportURL=https://github.com/raph559/winawdl/issues
 ; The two scripts know this folder and no other.
 DefaultDirName={autopf}\winawdl
@@ -33,6 +33,7 @@ MinVersion=10.0.19041
 ; The app holds this while it runs, so setup asks for it to be closed first.
 AppMutex=winawdl-app
 InfoBeforeFile=before.txt
+LicenseFile={#Stage}\licenses\WinDrop (PolyForm Noncommercial 1.0.0).txt
 SetupIconFile=..\app\winawdl.ico
 UninstallDisplayIcon={app}\winawdl.exe
 UninstallDisplayName=winawdl
@@ -40,7 +41,7 @@ WizardStyle=modern
 Compression=lzma2
 SolidCompression=yes
 OutputDir={#Output}
-OutputBaseFilename=winawdl-{#Version}-setup
+OutputBaseFilename=WinDrop-{#Version}-setup
 VersionInfoVersion={#Version}
 VersionInfoProductName=winawdl
 VersionInfoDescription=winawdl setup

@@ -1,4 +1,4 @@
-﻿/* SPDX-License-Identifier: BSD-3-Clause-Clear */
+﻿/* SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0 */
 /* Phase 4 test: sends broadcast probe requests from the MT7902 and counts
  * the probe responses that access points address back to it. An answer is
  * proof, from a third party, that the frames went on air.

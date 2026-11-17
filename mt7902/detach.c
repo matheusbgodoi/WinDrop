@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: BSD-3-Clause-Clear */
+/* SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0 */
 /* Starts a program from this folder in the background, its output going to
  * <program>.log beside it, and returns at once. The runner task runs one
  * program at a time; this is how a daemon and its client run together.

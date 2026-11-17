@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: BSD-3-Clause-Clear */
+/* SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0 */
 /* Phase 3 test: boots the MT7902, listens on one channel in sniffer mode and
  * reports what arrived.   rxtest <patch.bin> <ram.bin> <channel> [seconds] */
 #include "mt7902_radio.h"

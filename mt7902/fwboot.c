@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: BSD-3-Clause-Clear */
+/* SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0 */
 /* Phase 2 test: brings the MT7902 up, downloads its firmware and reports
  * whether it runs.   fwboot <patch.bin> <ram.bin> */
 #include "mt7902_hw.h"

@@ -116,6 +116,17 @@ public static class Program
             window.Surface();
         }));
         model.StartTheEngine();
+        // A while after the start, and once: is there a newer release on GitHub?
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(TimeSpan.FromSeconds(15));
+            if (System.Reflection.Assembly.GetExecutingAssembly().GetName().Version is not { } current) return;
+            if (await Updates.NewerThan(current) is not { } found) return;
+            _ = app.Dispatcher.BeginInvoke(() => icon?.Say(
+                $"WinDrop {found.Version.ToString(3)} is available. Press here to see what is new.",
+                () => System.Diagnostics.Process.Start(
+                    new System.Diagnostics.ProcessStartInfo(found.Page) { UseShellExecute = true })));
+        });
         if (files.Count > 0) model.Hold(files);
         // Started by Windows at sign-in: in the notification area only, and receiving.
         if (args.Contains(Autostart.Flag)) model.RadioOn = true;

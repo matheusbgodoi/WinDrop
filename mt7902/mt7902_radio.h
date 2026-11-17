@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: BSD-3-Clause-Clear */
+/* SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0 */
 /* The MT7902 as a raw 802.11 radio once its firmware runs: capability query,
  * MAC start, channel and sniffer mode, and the receive descriptor. */
 #pragma once

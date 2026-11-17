@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: BSD-3-Clause-Clear */
+/* SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0 */
 /* User-space bring-up of the MediaTek MT7902 over the winawdl register proxy:
  * power control, WFDMA rings in polled mode, MCU commands and firmware
  * download. The sequence follows mt76's mt7921e path. */

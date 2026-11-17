@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: BSD-3-Clause-Clear */
+/* SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0 */
 /* The MT7902 as winawdl's radio daemon: serves radio/radio_link.h on the named
  * pipe, so the AWDL daemon written for the Realtek radio runs on this card.
  *   radiod <patch.bin> <ram.bin> <channel> [seconds [data rate [report [20]]]]

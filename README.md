@@ -253,6 +253,8 @@ A instalação assina o driver com um certificado criado no próprio PC, cria du
 - [mt76](https://github.com/openwrt/mt76): o driver Linux que serviu de referência para a MT7902.
 - [Wintun](https://www.wintun.net/), da WireGuard: a interface de rede virtual.
 
-O código em `mt7902/` é BSD-3-Clause-Clear. O restante segue as licenças de cada pasta (`LICENSE` na raiz e em `awdl/`, `airdrop/`, `radio/`). O firmware da MediaTek não faz parte deste repositório.
+**Uso não comercial, com citação obrigatória da fonte.** O trabalho original deste fork (a pasta `mt7902/`, o nome, o logo, a documentação e as mudanças feitas no projeto original) está sob a [PolyForm Noncommercial 1.0.0](LICENSE-WINDROP.md): pode usar, estudar, modificar e redistribuir sem fins comerciais, mantendo o aviso de autoria; não pode vender nem embutir em produto pago.
+
+O que vem de outros projetos continua sob a licença original (MIT para o winawdl, GPL-3.0 para o daemon AWDL), e este fork não pode restringi-las. [LICENSING.md](LICENSING.md) diz qual licença vale para cada parte. O firmware da MediaTek não faz parte deste repositório.
 
 AirDrop, AWDL, iPhone, Mac e iCloud são marcas da Apple. Este projeto não é afiliado à Apple nem à MediaTek.

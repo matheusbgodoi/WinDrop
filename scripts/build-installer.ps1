@@ -49,6 +49,8 @@ foreach ($pair in $files) {
 
 # Each license under the name of what it covers.
 $licenses = New-Item -ItemType Directory -Force "$stage\licenses"
+Copy-Item "$repo\LICENSE-WINDROP.md" "$licenses\WinDrop (PolyForm Noncommercial 1.0.0).txt"
+Copy-Item "$repo\LICENSING.md" "$licenses\LICENSING.md"
 Copy-Item "$repo\LICENSE" "$licenses\winawdl (MIT).txt"
 Copy-Item "$repo\airdrop\LICENSE" "$licenses\airdrop, adapted from omdrop (MIT).txt"
 Copy-Item "$repo\ref\mt76\firmware\LICENSE.mediatek" "$licenses\MT7902 firmware (MediaTek).txt"
@@ -99,7 +101,7 @@ if ($telling) {
   throw "These hold the name of the account that built them: $($telling.Name -join ', ')"
 }
 
-$zip = "$repo\build\installer\winawdl-$version-windows-x64.zip"
+$zip = "$repo\build\installer\WinDrop-$version-windows-x64.zip"
 if (Test-Path $zip) { Remove-Item $zip }
 Compress-Archive -Path $stage -DestinationPath $zip
 Get-Item $zip | Select-Object Name, Length
@@ -111,7 +113,7 @@ $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6", "$env:ProgramFiles\Inno Setup 6
 if ($iscc) {
   & $iscc /Qp "/DVersion=$version" "/DStage=$stage" "/DOutput=$repo\build\installer" "$repo\installer\winawdl.iss"
   if ($LASTEXITCODE -ne 0) { throw "Inno Setup could not compile the setup program ($LASTEXITCODE)" }
-  $setup = Get-Item "$repo\build\installer\winawdl-$version-setup.exe"
+  $setup = Get-Item "$repo\build\installer\WinDrop-$version-setup.exe"
   $setup | Select-Object Name, Length
   "SHA-256 $((Get-FileHash $setup -Algorithm SHA256).Hash)"
 } else {

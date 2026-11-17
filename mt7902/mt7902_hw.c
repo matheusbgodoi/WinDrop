@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: BSD-3-Clause-Clear */
+/* SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0 */
 #include "mt7902_hw.h"
 #include "mt7902_regs.h"
 #include "../tools/regproxy_client.h"
