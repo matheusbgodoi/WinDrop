@@ -71,11 +71,13 @@ As três telas são capturas da janela real, com o MacBook real na lista. Depois
 
 ### O item do botão direito
 
-O WinDrop acrescenta um item ao menu do botão direito de qualquer arquivo. É isto que o Explorer lista para um JPEG no PC de teste, lido do próprio Explorer (sem os itens de outros programas):
+O WinDrop acrescenta um item, com o ícone dele, ao menu do botão direito de qualquer arquivo. Captura do menu real no PC de teste, em um dos arquivos de amostra:
 
-> Abrir · Imprimir · **Enviar via AirDrop** · Copiar como caminho · Compartilhar · Recortar · Copiar · Excluir · Renomear · Propriedades
+<p align="center">
+  <img src="docs/assets/explorer-right-click.png" width="560" alt="Menu do botão direito do Explorer em um arquivo de amostra, com Enviar via AirDrop e o ícone do WinDrop">
+</p>
 
-No Windows 11 ele fica no menu completo, em "Mostrar mais opções" (ou Shift + botão direito): o menu curto só aceita itens de aplicativos empacotados. Vários arquivos escolhidos de uma vez caem todos na mesma janela do WinDrop. Ainda não há imagem do menu aqui: não foi possível capturá-la sem controlar a área de trabalho de quem está no PC.
+No Windows 11 ele fica no menu completo, em "Mostrar mais opções" (ou Shift + botão direito): o menu curto só aceita itens de aplicativos empacotados. Vários arquivos escolhidos de uma vez caem todos na mesma janela do WinDrop.
 
 ## Casos de uso
 

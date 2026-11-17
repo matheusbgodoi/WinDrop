@@ -74,11 +74,13 @@ All three are captures of the real window, with the real MacBook in the list. Af
 
 ### The right-click entry
 
-WinDrop adds one entry to the right-click menu of every file. This is what Explorer lists for a JPEG on the test PC, read from Explorer itself (other programs' entries left out):
+WinDrop adds one entry, with its icon, to the right-click menu of every file. A capture of the real menu on the test PC, on one of the sample files:
 
-> Abrir · Imprimir · **Enviar via AirDrop** · Copiar como caminho · Compartilhar · Recortar · Copiar · Excluir · Renomear · Propriedades
+<p align="center">
+  <img src="docs/assets/explorer-right-click.png" width="560" alt="Explorer's right-click menu on a sample file, with Enviar via AirDrop and the WinDrop icon">
+</p>
 
-On Windows 11 it is in the full menu, under "Show more options" (or Shift + right-click): the short menu only takes entries from packaged apps. Several files chosen at once all land in the same WinDrop window. There is no picture of the menu here yet: it could not be captured without driving the desktop of the person at the PC.
+On Windows 11 it is in the full menu, under "Show more options" (or Shift + right-click): the short menu only takes entries from packaged apps. Several files chosen at once all land in the same WinDrop window.
 
 ## Use cases
 
