@@ -1,6 +1,6 @@
 # Port do winawdl para a MediaTek MT7902
 
-Status: 2026-11-16. Fases 0 a 5 concluídas. O daemon AWDL do winawdl roda sobre a MT7902 no canal 149, sincroniza com o MacBook e troca tráfego IPv6 com ele. OFDM em 2,4 GHz ainda não sai. Faltam o AirDrop (fase 6) e a integração no Windows (fase 7).
+Status: 2026-11-16. Fases 0 a 5 concluídas; fase 6 validada nos dois sentidos com o MacBook (falta o iPhone); fase 7 em andamento, com o aplicativo já recebendo e enviando. OFDM em 2,4 GHz ainda não sai. Wi-Fi e AirDrop ainda não convivem: a placa faz um ou outro.
 
 ## Registro de resultados
 
@@ -13,6 +13,8 @@ Status: 2026-11-16. Fases 0 a 5 concluídas. O daemon AWDL do winawdl roda sobre
 | 2026-11-16 | 4 | Aprovada em 5 GHz. Com o MacBook em modo monitor como testemunha, 30 de 30 pedidos de sondagem a 6 Mb/s OFDM no canal 149 foram capturados. Em 2,4 GHz só 1 Mb/s sai no ar |
 | 2026-11-16 | 5 | Aprovada. `mt7902/radiod` serve o protocolo `radio/radio_link.h`; o `awdld` do winawdl, sem alteração, roda sobre ele no canal 149. Achou o MacBook e outro aparelho Apple, elegeu mestre de sincronismo, criou a interface `awdl0` (Wintun) e `ping -6` ao endereço link-local do `awdl0` do Mac teve 10 de 10 respostas (6 a 456 ms, média 218 ms) |
 | 2026-11-16 | 6 | Parcial. PC para Mac aprovado: `airdrop/sender.py` achou o MacBook, o pedido foi aceito e um arquivo de 20 MB chegou com SHA-256 idêntico, a 1,1 MB/s. O receptor (`airdrop/receiver.py`, "PC do Matheus") aparece no AirDrop do Mac e respondeu a `POST /Discover`. Faltam Mac para PC e os dois sentidos com o iPhone |
+| 2026-11-16 | 6 | Mac para PC aprovado: uma imagem de 104425 bytes arrastada no AirDrop do Mac chegou em Downloads pelo aplicativo (`POST /Ask` e `POST /Upload` com 200). Falta o iPhone nos dois sentidos |
+| 2026-11-16 | 7 | Parcial. O aplicativo WPF do winawdl, apontado para `radiod`, mostra o MacBook, recebe e segura arquivos. Novos: "Enviar via AirDrop" no botão direito (`app/src/Shell/SendMenu.cs`, registro em HKCU, arquivos repassados à instância aberta por pipe) e a chave "AirDrop" no menu da bandeja. Conferido por captura da janela (`scripts/app-shot.ps1`). O liga/desliga ainda não sobe o rádio sozinho nesta máquina: falta novo logon para o direito "Bloquear páginas na memória" valer |
 
 Observações da fase 4:
 
@@ -124,3 +126,10 @@ O daemon AWDL continua GPL-3.0 (OWL) em processo separado, como no projeto origi
 - Para rodar os dois daemons como LocalSystem pelo executor, `mt7902/detach` inicia um programa da pasta de build em segundo plano. `awdld.exe` e `wintun.dll` precisam ser copiados para `mt7902uild`.
 - A latência do ping varia muito (6 a 456 ms), coerente com o rádio parado em um só canal enquanto o Mac alterna entre canais.
 - Dependências novas na máquina: MinGW-w64 (WinLibs, via winget, escopo do usuário) e Wintun 0.14.1 em `deps\wintun`.
+
+## Notas das fases 6 e 7
+
+- Taxa de dados: a 24 Mb/s (`0x49`) tudo funciona; a 54 Mb/s (`0x4c`) o Mac acha o PC e responde a ping, mas os pedidos HTTPS dele ao receptor não completam. Sem agregação nem adaptação de taxa, o envio de 20 MB ficou em 1,1 MB/s.
+- O AirDrop do Mac foi posto em "Todos" (`defaults write com.apple.sharingd DiscoverableMode Everyone`) para os testes.
+- O rádio precisa do direito "Bloquear páginas na memória" (memória AWE para DMA). `scripts/grant-lock-pages.ps1` concede à conta; vale a partir do logon seguinte. Até lá os daemons sobem como LocalSystem pelo executor (`scripts/mt7902-awdl.ps1`) e o aplicativo usa o enlace já de pé.
+- Convivência com o Wi-Fi: o desenho do winawdl é trocar o driver da placa ao ligar e devolver ao desligar (`app/src/Radio/WifiCard.cs`), o que só vale para a cópia instalada. Não é uso simultâneo.
