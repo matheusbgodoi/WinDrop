@@ -8,11 +8,13 @@ O logo é um desenho próprio (`assets/windrop.svg`): uma gota que carrega um si
 
 Estado em 2026-11-16. O histórico técnico, fase por fase, está em [MT7902-PORT.md](MT7902-PORT.md).
 
+A visão geral do projeto, com a demonstração de um envio real, as decisões técnicas, os testes e os benchmarks, está no [README](../README.md). Este guia cobre o uso no dia a dia.
+
 ## O que foi validado
 
 | Sentido | Resultado |
 |---|---|
-| PC para MacBook | Arquivo de 20 MB, SHA-256 idêntico nos dois lados, 1,1 MB/s |
+| PC para MacBook | Arquivo de 20 MB, SHA-256 idêntico nos dois lados; hoje entre 3 e 5 MB/s |
 | MacBook para PC | Imagem de 104425 bytes arrastada no AirDrop do Mac, gravada em Downloads |
 | iPhone para PC | Foto de 105043 bytes enviada pela folha de compartilhamento |
 | PC para iPhone | Arquivo enviado e aceito no iPhone |
