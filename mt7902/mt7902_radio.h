@@ -19,6 +19,7 @@ typedef struct mt7902_frame {
   uint32_t len;
   uint8_t channel;
   uint8_t fcs_error;
+  int8_t rssi; /* dBm, 0 when the chip did not report it */
 } mt7902_frame;
 
 /* What the firmware does after boot before the radio is usable. */
@@ -29,6 +30,9 @@ int mt7902_monitor_start(mt7902_dev *dev, const mt7902_caps *caps,
 /* Retunes while sniffing. */
 int mt7902_set_channel(mt7902_dev *dev, const mt7902_caps *caps,
                        uint8_t channel);
+/* Changes the address the card answers to: it acknowledges frames sent to it
+ * and takes acknowledgements for frames sent from it. */
+int mt7902_set_address(mt7902_dev *dev, const uint8_t *mac);
 
 /* Legacy rates for mt7902_send_frame, in the chip's encoding: PHY mode in
  * bits 9:6 (0 is CCK, 1 is OFDM), rate index below. */

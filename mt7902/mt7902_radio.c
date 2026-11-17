@@ -196,18 +196,21 @@ int mt7902_set_channel(mt7902_dev *dev, const mt7902_caps *caps,
   return set_chan_info(dev, caps, MCU_EXT_CMD_CHANNEL_SWITCH, channel);
 }
 
+int mt7902_set_address(mt7902_dev *dev, const uint8_t *mac) {
+  uint8_t req[16] = {0};
+  put_le16(req + 6, 12); /* tag 0 is DEV_INFO_ACTIVE; len */
+  req[8] = 1;            /* active */
+  memcpy(req + 10, mac, 6);
+  return cmd_acked(dev, MCU_UNI_CMD(MCU_UNI_CMD_DEV_INFO_UPDATE), req,
+                   sizeof(req), "device info");
+}
+
 int mt7902_monitor_start(mt7902_dev *dev, const mt7902_caps *caps,
                          uint8_t channel) {
   if (set_chan_info(dev, caps, MCU_EXT_CMD_SET_RX_PATH, channel)) return -1;
 
   /* mt76_connac_mcu_uni_add_dev: the interface, then its BSS. */
-  uint8_t dev_req[16] = {0};
-  put_le16(dev_req + 6, 12); /* tag 0 is DEV_INFO_ACTIVE; len */
-  dev_req[8] = 1;            /* active */
-  memcpy(dev_req + 10, caps->mac, 6);
-  if (cmd_acked(dev, MCU_UNI_CMD(MCU_UNI_CMD_DEV_INFO_UPDATE), dev_req,
-                sizeof(dev_req), "device info"))
-    return -1;
+  if (mt7902_set_address(dev, caps->mac)) return -1;
 
   uint8_t bss_req[36] = {0};
   uint8_t *basic = bss_req + 4; /* struct mt76_connac_bss_basic_tlv, tag 0 */
@@ -281,7 +284,14 @@ int mt7902_rx_frame(const mt7902_rx *rx, mt7902_frame *frame) {
   if (rxd1 & MT_RXD1_NORMAL_GROUP_4) offset += 16;
   if (rxd1 & MT_RXD1_NORMAL_GROUP_1) offset += 16;
   if (rxd1 & MT_RXD1_NORMAL_GROUP_2) offset += 8;
+  frame->rssi = 0;
   if (rxd1 & MT_RXD1_NORMAL_GROUP_3) {
+    /* P-RXV word 1 starts with the first antenna's RCPI, in half dB above
+     * -110 dBm. */
+    if (offset + 8 <= total) {
+      int rcpi = rx->data[offset + 4];
+      frame->rssi = (int8_t)((rcpi - 220) / 2);
+    }
     offset += 8;
     if (rxd1 & MT_RXD1_NORMAL_GROUP_5) offset += 72;
   }
