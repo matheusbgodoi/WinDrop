@@ -105,7 +105,7 @@ Envios reais de um arquivo de 20 MB do PC para um MacBook Pro a cerca de 1 metro
 | **VHT MCS 7, 80 MHz (padrão)** | **5,2, 5,1 e 3,1 MB/s** |
 | VHT MCS 9, 80 MHz | 2,3 MB/s |
 
-Outras medidas: `ping` de 1400 bytes ao Mac pela `awdl0` com 0% de perda e mediana de 150 ms; sinal do Mac e do iPhone entre -52 e -60 dBm; rádio no ar cerca de 15 s depois de ligar a chave; Wi-Fi de volta cerca de 10 s depois de desligar.
+Outras medidas: `ping` de 1400 bytes ao Mac pela `awdl0` com 0% de perda e mediana de 150 ms; sinal do Mac e do iPhone entre -52 e -60 dBm; Wi-Fi de volta cerca de 10 s depois de desligar.
 
 São poucas amostras, com um aparelho e uma distância. O sentido Apple para PC e o iPhone na taxa padrão ainda não foram medidos.
 
