@@ -13,7 +13,7 @@ public enum Across { EngineDown, RadioOff, RadioStarting, RadioProblem, Nearby }
 /// want to send, and the files on this side.</summary>
 public sealed class TableModel : Observable
 {
-    public const string Project = "https://github.com/matheusbgodoi/winawdl-mt7902";
+    public const string Project = "https://github.com/matheusbgodoi/WinDrop";
     private const int MostReceived = 24;
     public const int MostTrayText = 127;
     private static readonly TimeSpan SentShownFor = TimeSpan.FromSeconds(4);

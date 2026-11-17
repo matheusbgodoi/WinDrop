@@ -1,4 +1,4 @@
-﻿<p align="center">
+<p align="center">
   <img src="docs/assets/windrop.png" width="128" alt="Logo do WinDrop">
 </p>
 
@@ -47,6 +47,68 @@ As três imagens acima são renderizações do próprio aplicativo com aparelhos
   <img src="docs/assets/app-radio-on.png" width="300" alt="WinDrop instalado, com um MacBook real na lista">
 </p>
 
+## Casos de uso
+
+- **Do iPhone para o PC, sem cabo e sem nuvem.** Fotos e vídeos saem da folha de compartilhamento do iPhone direto para a pasta Downloads do Windows.
+- **Do PC para o iPhone ou o Mac.** Botão direito em um arquivo no Explorer, "Enviar via AirDrop", um clique no aparelho.
+- **Entre o Mac e o PC na mesma mesa.** O PC aparece na janela do AirDrop do Finder como mais um aparelho.
+- **Sem internet e sem rede em comum.** O AirDrop é ponto a ponto: funciona sem roteador, sem conta e sem aplicativo instalado no lado Apple.
+- **PC sempre visível.** Com "Start with Windows, radio on", o WinDrop sobe com o Windows, sem janela, já recebendo.
+
+## Tecnologias avaliadas e escolhidas
+
+| Decisão | Avaliado | Escolhido | Motivo |
+|---|---|---|---|
+| Como falar com aparelhos Apple | LocalSend e similares (exigem aplicativo no iPhone); AirDrop real | AirDrop real, por AWDL | Era o requisito: aparecer no AirDrop nativo do iPhone e do Mac, sem instalar nada neles |
+| Placa Wi-Fi | Trocar por uma Realtek RTL8852CE, que o winawdl já suporta; portar para a MT7902 da placa-mãe | Portar para a MT7902 | Não trocar hardware |
+| Referência para o chip | Engenharia reversa do driver Windows da MediaTek; driver Linux mt76 | mt76 (caminho `mt7921e`) | Código aberto, e a MT7902 entrou nele no Linux 7.1 |
+| Onde roda o driver | Driver de kernel próprio; modo usuário sobre o `regproxy` do winawdl | Modo usuário | Um erro derruba um processo, não o Windows; o `regproxy` (UMDF) já existia e funciona com Secure Boot |
+| Memória para DMA | Memória contígua de kernel; páginas físicas travadas por AWE | AWE, em páginas de 4 KiB abaixo de 4 GiB | A placa só aceita endereços de 32 bits, e AWE dispensa código de kernel |
+| Interrupções | Interrupções da placa; consulta periódica dos anéis | Consulta (polling) | Não exige nada do driver de kernel |
+| Pilha AWDL | Escrever do zero; OWL | OWL, como no winawdl | Implementação aberta e já validada com aparelhos Apple |
+| Interface de rede no Windows | Driver NDIS próprio; Wintun | Wintun | Assinado, estável e usado pelo winawdl |
+| Como o rádio ganha privilégio | Elevação (UAC) a cada vez; direito "Bloquear páginas na memória" na conta; tarefa agendada como LocalSystem | Tarefa agendada, restrita à conta que instalou | Sem pergunta do Windows ao ligar, e sem exigir novo logon |
+| Wi-Fi e AirDrop | Uso simultâneo (exigiria um cliente Wi-Fi completo próprio); troca do driver ao ligar e desligar | Troca do driver | O uso simultâneo está fora do alcance do projeto hoje |
+| Taxa de transmissão | OFDM 24 e 54 Mb/s; VHT em 20 e 80 MHz | VHT MCS 7 em 80 MHz, fixa | A mais rápida entre as que completaram os envios de teste |
+
+## Testes
+
+**Por fase**, cada uma com um critério medido na máquina:
+
+| Fase | Critério | Resultado |
+|---|---|---|
+| 1. Driver toma a placa | ler o identificador do chip | `chip id 0x7902` |
+| 2. DMA e firmware | firmware da MediaTek rodando, sem interrupções | pronto em até 4 tentativas, 10 de 10 inicializações |
+| 3. Recepção | quadros nos canais 6, 44 e 149 | incluindo quadros AWDL de aparelhos Apple |
+| 4. Transmissão | testemunha independente no ar | MacBook em modo monitor capturou 30 de 30 quadros OFDM no canal 149 |
+| 5. AWDL | tráfego IPv6 com um aparelho Apple | `ping` ao Mac pela `awdl0`: 10 de 10 |
+| 6. AirDrop | arquivos nos dois sentidos, Mac e iPhone | quatro sentidos validados, um deles com SHA-256 |
+| 7. Integração | cópia instalada, ligar, enviar, desligar | ciclo completo, Wi-Fi de volta em cerca de 10 s |
+
+**Automatizados:**
+
+- `airdrop/tests`: 84 testes, todos passando (`python -m unittest discover -s tests`).
+- `scripts\build-app.ps1 -Check`: 134 de 135. O que falha procura uma mensagem do `ping.exe` em inglês e este Windows está em português; falha igual sem as mudanças deste fork.
+
+**Ferramentas de teste do fork:** `mt7902/fwboot`, `rxtest`, `txtest` e `radioclient` (rádio), `scripts/sniff-test.ps1` (Mac como testemunha), `scripts/rate-trial.ps1` (velocidade por taxa), `scripts/app-radio-switch.ps1` e `scripts/app-send.ps1` (o aplicativo, por automação de interface).
+
+## Benchmarks
+
+Envios reais de um arquivo de 20 MB do PC para um MacBook Pro a cerca de 1 metro, pelo WinDrop instalado, um envio por medição:
+
+| Taxa de dados | Velocidade |
+|---|---|
+| OFDM 24 Mb/s | 1,5 MB/s |
+| OFDM 54 Mb/s | 1,1 MB/s |
+| VHT MCS 8, 20 MHz | 3,1 MB/s |
+| VHT MCS 5, 80 MHz | 3,4 MB/s |
+| **VHT MCS 7, 80 MHz (padrão)** | **5,2, 5,1 e 3,1 MB/s** |
+| VHT MCS 9, 80 MHz | 2,3 MB/s |
+
+Outras medidas: `ping` de 1400 bytes ao Mac pela `awdl0` com 0% de perda e mediana de 150 ms; sinal do Mac e do iPhone entre -52 e -60 dBm; rádio no ar cerca de 15 s depois de ligar a chave; Wi-Fi de volta cerca de 10 s depois de desligar.
+
+São poucas amostras, com um aparelho e uma distância. O sentido Apple para PC e o iPhone na taxa padrão ainda não foram medidos.
+
 ## Como funciona
 
 ```
@@ -86,8 +148,8 @@ O caminho completo, fase por fase, com o que deu errado e como foi resolvido, es
 Requisitos: Windows 10 ou 11 de 64 bits, a placa MT7902, Python 3.10 ou mais novo e o .NET 10 Desktop Runtime. Para compilar: Visual Studio Build Tools com o WDK, o SDK do .NET 10 e MinGW-w64 (`winget install BrechtSanders.WinLibs.POSIX.UCRT --scope user`).
 
 ```powershell
-git clone --recurse-submodules https://github.com/matheusbgodoi/winawdl-mt7902
-cd winawdl-mt7902
+git clone --recurse-submodules https://github.com/matheusbgodoi/WinDrop
+cd WinDrop
 git clone https://github.com/morrownr/mt76 ref\mt76     # firmware da MT7902
 .\scripts\fetch-wintun.ps1
 .\scripts\build-installer.ps1 -Build -AllowDirty

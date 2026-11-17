@@ -60,7 +60,7 @@ $source = @(
   "winawdl $version",
   '',
   'Every program in this folder was built from the source at',
-  '  https://github.com/matheusbgodoi/winawdl-mt7902 (a fork of https://github.com/raph559/winawdl)',
+  '  https://github.com/matheusbgodoi/WinDrop (a fork of https://github.com/raph559/winawdl)',
   "at commit $commit$(if ($changed) { ', with changes that were not committed: a trial build, not for publishing' }),",
   'with its submodules at:'
 ) + $modules + @(
