@@ -12,6 +12,7 @@ Status: 2026-11-16. Fases 0 a 5 concluídas. O daemon AWDL do winawdl roda sobre
 | 2026-11-16 | 4 | Parcial. `mt7902/txtest` envia pedidos de sondagem em broadcast. A 1 Mb/s (CCK) no canal 6, 15 a 22 respostas de pontos de acesso vizinhos voltaram endereçadas ao MAC da placa, o que prova a transmissão no ar. A 6 Mb/s (OFDM), nos canais 6 e 157, nenhuma resposta |
 | 2026-11-16 | 4 | Aprovada em 5 GHz. Com o MacBook em modo monitor como testemunha, 30 de 30 pedidos de sondagem a 6 Mb/s OFDM no canal 149 foram capturados. Em 2,4 GHz só 1 Mb/s sai no ar |
 | 2026-11-16 | 5 | Aprovada. `mt7902/radiod` serve o protocolo `radio/radio_link.h`; o `awdld` do winawdl, sem alteração, roda sobre ele no canal 149. Achou o MacBook e outro aparelho Apple, elegeu mestre de sincronismo, criou a interface `awdl0` (Wintun) e `ping -6` ao endereço link-local do `awdl0` do Mac teve 10 de 10 respostas (6 a 456 ms, média 218 ms) |
+| 2026-11-16 | 6 | Parcial. PC para Mac aprovado: `airdrop/sender.py` achou o MacBook, o pedido foi aceito e um arquivo de 20 MB chegou com SHA-256 idêntico, a 1,1 MB/s. O receptor (`airdrop/receiver.py`, "PC do Matheus") aparece no AirDrop do Mac e respondeu a `POST /Discover`. Faltam Mac para PC e os dois sentidos com o iPhone |
 
 Observações da fase 4:
 
