@@ -25,9 +25,16 @@ public partial class RequestsView : UserControl
             if (_mark is null)
             {
                 // Twice the size it is shown at, for a screen scaled up to 200%.
-                var drawn = AppIcon.Draw(32, Colors.White, AppIcon.Ground);
-                drawn.Freeze();
-                _mark = drawn;
+                if (AppIcon.Own() is { } own)
+                {
+                    _mark = own;
+                }
+                else
+                {
+                    var drawn = AppIcon.Draw(32, Colors.White, AppIcon.Ground);
+                    drawn.Freeze();
+                    _mark = drawn;
+                }
             }
             return _mark;
         }

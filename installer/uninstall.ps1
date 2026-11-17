@@ -1,4 +1,4 @@
-# Takes winawdl off this PC: gives the Wi-Fi card back to its own driver,
+﻿# Takes winawdl off this PC: gives the Wi-Fi card back to its own driver,
 # removes the driver, the trust in the certificate it was signed with, the
 # firewall rules, the startup task, the Start Menu entry and the files. What was received stays
 # where it was stored. -RemoveData also deletes the app's settings and logs.
@@ -26,7 +26,7 @@ $CertSubject   = 'CN=winawdl driver (signed on this PC)'
 $TrustStores   = 'Root', 'TrustedPublisher'
 $FirewallGroup = 'winawdl AirDrop'
 $UninstallKey  = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\winawdl'
-$Shortcut      = Join-Path $env:ProgramData 'Microsoft\Windows\Start Menu\Programs\winawdl.lnk'
+$Shortcut      = Join-Path $env:ProgramData 'Microsoft\Windows\Start Menu\Programs\WinDrop.lnk'
 $Data          = (Join-Path $env:LOCALAPPDATA 'winawdl'), (Join-Path $env:ProgramData 'winawdl')
 $GiveBackFlag  = '--give-wifi-back'
 $LogFolder     = Join-Path $env:ProgramData 'winawdl\logs'

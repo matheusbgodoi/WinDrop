@@ -101,9 +101,28 @@ public static class AppIcon
         (byte)Math.Min(255, color.R * by + (by > 1 ? 14 : 0)), (byte)Math.Min(255, color.G * by),
         (byte)Math.Min(255, color.B * by));
 
-    /// <summary>For the notification area, which shows small marks in one color.</summary>
+    private static System.Drawing.Icon? OwnIcon() =>
+        Environment.ProcessPath is { } program ? System.Drawing.Icon.ExtractAssociatedIcon(program) : null;
+
+    /// <summary>The program's icon (app\winawdl.ico) as a picture, or null when it has none.</summary>
+    public static ImageSource? Own()
+    {
+        using var icon = OwnIcon();
+        if (icon is null) return null;
+        var picture = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(
+            icon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+        picture.Freeze();
+        return picture;
+    }
+
+    /// <summary>For the notification area: the program's icon, or the drawn mark in one color.</summary>
     public static System.Drawing.Icon ForTray(bool onDarkTaskbar)
     {
+        // The program's own icon wherever there is one: the same mark as on the window and in Explorer.
+        if (OwnIcon() is { } own)
+        {
+            using (own) return new System.Drawing.Icon(own, System.Windows.Forms.SystemInformation.SmallIconSize);
+        }
         var encoder = new PngBitmapEncoder();
         encoder.Frames.Add(BitmapFrame.Create(Draw(32, onDarkTaskbar ? Colors.White : Colors.Black, null)));
         using var png = new System.IO.MemoryStream();

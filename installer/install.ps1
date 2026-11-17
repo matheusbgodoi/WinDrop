@@ -1,4 +1,4 @@
-# Installs winawdl from the folder this script is in: copies it to Program
+﻿# Installs winawdl from the folder this script is in: copies it to Program
 # Files, signs the driver with a certificate made on this PC, lets AirDrop
 # through the firewall, adds a startup task that gives Wi-Fi back and a Start
 # Menu entry. It leaves Wi-Fi alone: the app's Radio switch takes the card and
@@ -32,7 +32,7 @@ $TrustStores   = 'Root', 'TrustedPublisher'
 $FirewallGroup = 'winawdl AirDrop'
 $ReceiverPort  = 8771
 $UninstallKey  = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\winawdl'
-$Shortcut      = Join-Path $env:ProgramData 'Microsoft\Windows\Start Menu\Programs\winawdl.lnk'
+$Shortcut      = Join-Path $env:ProgramData 'Microsoft\Windows\Start Menu\Programs\WinDrop.lnk'
 # The oldest Windows the driver's INF accepts.
 $OldestBuild   = 19041
 
@@ -277,7 +277,7 @@ Step 'a shortcut, and an entry in the list of installed apps' {
   $link.Save()
   New-Item $UninstallKey -Force | Out-Null
   $entry = @{
-    DisplayName = 'winawdl'; DisplayVersion = $Version; Publisher = 'winawdl project'
+    DisplayName = 'WinDrop'; DisplayVersion = $Version; Publisher = 'winawdl project'
     InstallLocation = $Target; DisplayIcon = (Join-Path $Target 'winawdl.exe')
     # Windows asks before it runs this, so the uninstaller does not ask again.
     UninstallString = "`"$(Join-Path $Target 'uninstall.cmd')`" /yes"
