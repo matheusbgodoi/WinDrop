@@ -2,15 +2,15 @@ winawdl
 =======
 
 AirDrop on Windows, through the PC's own Wi-Fi card: Apple's AWDL radio
-protocol and AirDrop, receiving and sending, on the built-in Realtek
-RTL8852CE. This is research code. The project, its source and its notes are at
+protocol and AirDrop, receiving and sending, on the built-in MediaTek
+MT7902. This is research code. The project, its source and its notes are at
 https://github.com/raph559/winawdl
 
 
 Before you install
 ------------------
 
-- It works with one Wi-Fi card only, the Realtek RTL8852CE. The installer
+- It works with one Wi-Fi card only, the MediaTek MT7902. The installer
   stops, having changed nothing, on a PC that has another.
 - Installing leaves Wi-Fi as it is. The app's Radio switch gives the card to
   winawdl's driver while the radio is on, so Wi-Fi is off then. Wi-Fi comes

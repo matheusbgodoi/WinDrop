@@ -20,7 +20,7 @@ Set-Location $env:SystemRoot
 [Environment]::CurrentDirectory = $env:SystemRoot
 
 $Target        = Join-Path $env:ProgramFiles 'winawdl'
-$HardwareId    = 'PCI\VEN_10EC&DEV_C852'
+$HardwareId    = 'PCI\VEN_14C3&DEV_7902'
 $InfName       = 'winawdl_regproxy.inf'
 $CertSubject   = 'CN=winawdl driver (signed on this PC)'
 $TrustStores   = 'Root', 'TrustedPublisher'
@@ -56,7 +56,7 @@ $me = [Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 if (-not $DryRun -and -not $me.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
   throw 'This needs administrator rights. Start uninstall.cmd, which asks Windows for them.'
 }
-$Programs = 'winawdl', 'awdld', 'winawdl_radio'
+$Programs = 'winawdl', 'awdld', 'radiod'
 $running = [bool](Get-Process $Programs -ErrorAction SilentlyContinue)
 
 "The Wi-Fi card now: $(Get-CardDriver)"

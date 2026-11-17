@@ -2,7 +2,7 @@ Before you install
 
 winawdl is AirDrop on Windows, through the PC's own Wi-Fi card. It is research code: the project, its source and its notes are at https://github.com/raph559/winawdl
 
-- It works with one Wi-Fi card only, the Realtek RTL8852CE. Setup stops, having changed nothing, on a PC that has another.
+- It works with one Wi-Fi card only, the MediaTek MT7902. Setup stops, having changed nothing, on a PC that has another.
 
 - Installing leaves Wi-Fi as it is. The app's Radio switch gives the card to winawdl's driver while the radio is on, so Wi-Fi is off then. Wi-Fi comes back when the radio is turned off, when winawdl quits, and when Windows starts.
 

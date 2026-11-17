@@ -68,7 +68,7 @@ Filename: "{app}\winawdl.exe"; Description: "Start winawdl"; Flags: postinstall 
 [Code]
 const
   CardKey = 'SYSTEM\CurrentControlSet\Enum\PCI';
-  CardPrefix = 'VEN_10EC&DEV_C852';
+  CardPrefix = 'VEN_14C3&DEV_7902';
 
 var
   Failed: Boolean;
@@ -125,7 +125,7 @@ function InitializeSetup: Boolean;
 begin
   Result := HasCard;
   if not Result then
-    SuppressibleMsgBox('No Realtek RTL8852CE Wi-Fi card was found in this PC.' + #13#10#13#10 +
+    SuppressibleMsgBox('No MediaTek MT7902 Wi-Fi card was found in this PC.' + #13#10#13#10 +
                        'winawdl drives that card and no other. Nothing was installed.',
                        mbInformation, MB_OK, IDOK);
 end;

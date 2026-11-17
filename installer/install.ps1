@@ -20,7 +20,7 @@ if (-not [Environment]::Is64BitProcess -and [Environment]::Is64BitOperatingSyste
 
 $Source        = $PSScriptRoot
 $Target        = Join-Path $env:ProgramFiles 'winawdl'
-$HardwareId    = 'PCI\VEN_10EC&DEV_C852'
+$HardwareId    = 'PCI\VEN_14C3&DEV_7902'
 # What the app runs to give the Wi-Fi card back, and where it says how that went.
 $GiveBackFlag  = '--give-wifi-back'
 $LogFolder     = Join-Path $env:ProgramData 'winawdl\logs'
@@ -104,11 +104,11 @@ if (-not [Environment]::Is64BitOperatingSystem -or [Environment]::OSVersion.Vers
   throw "winawdl needs 64-bit Windows 10, build $OldestBuild, or newer."
 }
 if (-not (Get-WifiCard)) {
-  "No Realtek RTL8852CE ($HardwareId) was found in this PC."
+  "No MediaTek MT7902 ($HardwareId) was found in this PC."
   'winawdl drives that card and no other. Nothing was installed.'
   exit 1
 }
-$Programs = 'winawdl', 'awdld', 'winawdl_radio'
+$Programs = 'winawdl', 'awdld', 'radiod'
 if ($Setup) {
   # Setup has had the app closed. The copy that runs its radio goes a moment later.
   if (-not $DryRun) {
@@ -153,8 +153,14 @@ if ($lacking -and $Setup) {
 $whoami = Join-Path $env:SystemRoot 'System32\whoami.exe'
 if ((Test-Administrator) -and -not ((& $whoami /priv | Out-String) -match 'SeLockMemoryPrivilege')) {
   'Note: this account may not lock pages in memory, which the radio needs for its buffers.'
-  '  Give it "Lock pages in memory" under Local Security Policy, Local Policies, User Rights'
-  '  Assignment, then sign out and in. The radio will not start until then.'
+  $grant = Join-Path $PSScriptRoot 'scripts\grant-lock-pages.ps1'
+  if (-not $DryRun -and (Test-Path $grant)) {
+    & $grant
+    '  Sign out and in once: the radio will not start until then.'
+  } else {
+    '  Give it "Lock pages in memory" under Local Security Policy, Local Policies, User Rights'
+    '  Assignment, then sign out and in. The radio will not start until then.'
+  }
   ''
 }
 

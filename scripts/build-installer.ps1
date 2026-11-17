@@ -16,7 +16,7 @@ if ($changed -and -not $AllowDirty) {
 
 if ($Build) {
   & "$repo\driver\regproxy\build.ps1" | Out-Null
-  & "$PSScriptRoot\build-radio.ps1" -Targets winawdl_radio | Out-Null
+  & "$repo\mt7902\build.ps1" | Out-Null
   & "$PSScriptRoot\build-awdl.ps1" | Out-Null
   & "$PSScriptRoot\build-app.ps1" | Out-Null
 }
@@ -32,7 +32,10 @@ $files = @(
   @('installer\install.ps1', ''), @('installer\install.cmd', ''), @('installer\uninstall.ps1', ''),
   @('installer\uninstall.cmd', ''), @('installer\README.txt', ''),
   @('airdrop\*.py', 'airdrop'), @('scripts\airdrop-beacon.ps1', 'scripts'),
-  @('build\radio\Release\winawdl_radio.exe', 'radio'),
+  @('mt7902\build\radiod.exe', 'radio'),
+  @('ref\mt76\firmware\WIFI_MT7902_patch_mcu_1_1_hdr.bin', 'radio\firmware'),
+  @('ref\mt76\firmware\WIFI_RAM_CODE_MT7902_1.bin', 'radio\firmware'),
+  @('scripts\grant-lock-pages.ps1', 'scripts'),
   @('build\awdl\awdld.exe', 'awdl'), @('build\awdl\wintun.dll', 'awdl'),
   @('driver\regproxy\winawdl_regproxy.inf', 'driver'), @('driver\regproxy\build\winawdl_regproxy.dll', 'driver')
 )
@@ -47,7 +50,7 @@ foreach ($pair in $files) {
 $licenses = New-Item -ItemType Directory -Force "$stage\licenses"
 Copy-Item "$repo\LICENSE" "$licenses\winawdl (MIT).txt"
 Copy-Item "$repo\airdrop\LICENSE" "$licenses\airdrop, adapted from omdrop (MIT).txt"
-Copy-Item "$repo\radio\LICENSE" "$licenses\radio daemon and devourer (GPL-2.0).txt"
+Copy-Item "$repo\ref\mt76\firmware\LICENSE.mediatek" "$licenses\MT7902 firmware (MediaTek).txt"
 Copy-Item "$repo\awdl\LICENSE" "$licenses\AWDL daemon and OWL (GPL-3.0).txt"
 Copy-Item "$repo\deps\wintun\LICENSE.txt" "$licenses\wintun.dll (WireGuard, prebuilt binaries).txt"
 
@@ -57,15 +60,15 @@ $source = @(
   "winawdl $version",
   '',
   'Every program in this folder was built from the source at',
-  '  https://github.com/raph559/winawdl',
+  '  https://github.com/matheusbgodoi/winawdl-mt7902 (a fork of https://github.com/raph559/winawdl)',
   "at commit $commit$(if ($changed) { ', with changes that were not committed: a trial build, not for publishing' }),",
   'with its submodules at:'
 ) + $modules + @(
   '',
-  'radio\winawdl_radio.exe is under the GNU General Public License, version 2 only: its source is',
-  'the radio folder of that repository and the devourer submodule. awdl\awdld.exe is under the GNU',
-  'General Public License, version 3 or later: its source is the awdl folder and the OWL submodule.',
-  'README.md there says how to build both.'
+  'radio\radiod.exe is the MT7902 radio daemon of this fork (BSD-3-Clause-Clear, the mt7902 folder).',
+  'radio\firmware holds MediaTek''s firmware for the card, under its own licence. awdl\awdld.exe is',
+  'under the GNU General Public License, version 3 or later: its source is the awdl folder and the',
+  'OWL submodule. docs\MT7902-PORT.md there says how to build them.'
 )
 Set-Content "$licenses\SOURCE.txt" $source
 Set-Content "$stage\VERSION" $version
