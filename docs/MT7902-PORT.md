@@ -149,3 +149,22 @@ O daemon AWDL continua GPL-3.0 (OWL) em processo separado, como no projeto origi
 - **Lista de aparelhos redesenhada** (`app/src/Views/MainView.xaml`): rostos redondos lado a lado no lugar das linhas. Conferida por renderização (`--render`), ainda não instalada.
 - **Verificações do aplicativo** (`scripts/build-app.ps1 -Check`): 134 passam e 1 falha, "asked to stop -> both daemons end". Esse teste usa o `ping.exe` como daemon de mentira e procura "Reply from" na saída; neste Windows em português o `ping` escreve "Resposta de". Falha igual sem a mudança de visual.
 - **Instalado e conferido em 2026-11-16, 22:30.** A cópia instalada mostra a lista nova com o MacBook real. Iniciada com `--background`, ficou sem janela, com o rádio em `running` e o Mac consultando o receptor. A chave Run do usuário foi gravada para iniciar assim com o Windows; o início real num logon ainda não foi observado.
+
+## Velocidade (2026-11-16)
+
+Envios reais de um arquivo de 20 MB do PC para o MacBook, a cerca de 1 m, pelo WinDrop instalado (`scripts/rate-trial.ps1`), um envio por linha:
+
+| Taxa de dados | Código | Velocidade |
+|---|---|---|
+| OFDM 24 Mb/s | `49` | 1,5 MB/s |
+| OFDM 54 Mb/s | `4c` | 1,1 MB/s |
+| VHT MCS 8, 20 MHz | `108` | 3,1 MB/s |
+| VHT MCS 5, 80 MHz | `8105` | 3,4 MB/s |
+| VHT MCS 7, 80 MHz | `8107` | 5,2, 5,1 e 3,1 MB/s |
+| VHT MCS 8, 80 MHz | `8108` | sem resultado em 120 s |
+| VHT MCS 9, 80 MHz | `8109` | 2,3 MB/s |
+
+- Os dois bits acima do campo de taxa do chip passaram a carregar a largura do quadro (`MT7902_RATE_WIDE_80`), então a transmissão também pode sair em 80 MHz.
+- Padrão novo: `8107`. Neste PC ele vale pelo arquivo `%ProgramData%\winawdladio.rate`; o valor no código só entra na próxima instalação.
+- Poucas amostras, um só aparelho, uma só distância. Não foi testado com o iPhone nesta taxa, e não há recuo automático: um aparelho que não ouça essa taxa não recebe nada. Em uma das tentativas o rádio não subiu, sem causa apurada.
+- O sentido contrário (Mac ou iPhone para o PC) não foi medido.

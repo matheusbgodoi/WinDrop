@@ -49,6 +49,9 @@ int mt7902_set_address(mt7902_dev *dev, const uint8_t *mac);
 #define MT7902_RATE_HT_MCS(mcs) (0x080 | (mcs))
 #define MT7902_RATE_VHT_MCS(mcs) (0x100 | (mcs))
 #define MT7902_RATE_HE_MCS(mcs) (0x200 | (mcs))
+/* Or-ed into a rate: the frame goes out 80 MHz wide, which needs the radio
+ * tuned 80 MHz wide (mt7902_width_mhz). Without it a frame is 20 MHz wide. */
+#define MT7902_RATE_WIDE_80 0x8000
 
 /* Spatial extension index of transmitted frames: 24 duplicates the stream on
  * both antennas, 0 sends on the first one alone. */

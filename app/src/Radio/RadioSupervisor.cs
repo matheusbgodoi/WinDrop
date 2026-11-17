@@ -102,9 +102,11 @@ public static class RadioSupervisor
     /// <summary>The MT7902 puts OFDM on air on 5 GHz only so far, and 149 is the AWDL
     /// channel Apple devices keep to while they are on a 2.4 GHz network.</summary>
     public const string Channel = "149";
-    /// <summary>Data frames to one device: 24 Mbit/s, in the chip's encoding. At 54 the Mac found
-    /// the PC but its requests to the receiver did not complete.</summary>
-    public const string DataRate = "49";
+    /// <summary>Data frames to one device: VHT MCS 7, one stream, 80 MHz wide, in the chip's
+    /// encoding with this project's width bits. Three 20 MB sends to a Mac a metre away went at
+    /// 5.2, 5.1 and 3.1 MB/s; at 24 Mbit/s (49) the same file went at 1.5. A device that cannot
+    /// hear this rate gets nothing: there is no stepping down yet.</summary>
+    public const string DataRate = "8107";
     public const string StatusFile = "radio.status";
     private const int InterruptWaitMs = 5000;
     private const int OwnLogLimitBytes = 64 * 1024;
@@ -118,14 +120,14 @@ public static class RadioSupervisor
     public static string RadioProgram(string root) =>
         Found(root, @"radio\radiod.exe", @"mt7902\build\radiod.exe");
     /// <summary>The data rate to use: DataRate, unless radio.rate beside the logs' folder names
-    /// another in the chip's encoding. For trying rates without building again; nothing but two or
-    /// three hexadecimal digits is taken from it.</summary>
+    /// another in the chip's encoding. For trying rates without building again; nothing but two to
+    /// four hexadecimal digits is taken from it.</summary>
     private static string ChosenRate()
     {
         try
         {
             var asked = File.ReadAllText(Path.Combine(Path.GetDirectoryName(LogFolder)!, "radio.rate")).Trim();
-            if (System.Text.RegularExpressions.Regex.IsMatch(asked, "^[0-9a-f]{2,3}$")) return asked;
+            if (System.Text.RegularExpressions.Regex.IsMatch(asked, "^[0-9a-f]{2,4}$")) return asked;
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException)
         {

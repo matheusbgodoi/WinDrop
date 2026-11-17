@@ -273,7 +273,9 @@ int mt7902_send_frame(mt7902_dev *dev, const uint8_t *frame, size_t len,
          (multicast ? BIT(10) : 0);
   w[3] = 15u << 11 /* REM_TX_COUNT */ | BIT(28) /* BA_DISABLE */ |
          (no_ack ? BIT(0) : 0);
-  w[6] = BIT(2) /* FIXED_BW, 20 MHz */ | (uint32_t)rate << 16;
+  /* The two bits above the chip's rate field are this layer's own: the width. */
+  w[6] = BIT(2) /* FIXED_BW */ | (uint32_t)(rate >> 14) /* BW: 0 is 20 MHz, 2 is 80 */ |
+         (uint32_t)(rate & 0x3fff) << 16;
   /* Frame type again, where the PCIe TXD carries it, and the spatial
    * extension index mt76 gives fixed-rate frames on a two-antenna card. */
   w[7] = (uint32_t)type << 20 | (uint32_t)subtype << 16 | mt7902_tx_spe << 11;
