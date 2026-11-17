@@ -164,12 +164,23 @@ int mt7902_radio_init(mt7902_dev *dev, mt7902_caps *caps) {
   return set_rate_txpower(dev, 1) || set_rate_txpower(dev, 2) ? -1 : 0;
 }
 
-/* mt7921_mcu_set_chan_info, 20 MHz only. */
+uint8_t mt7902_width_mhz = 20;
+
+/* The centre of the 80 MHz block a 5 GHz channel belongs to, or the channel
+ * itself while the radio stays 20 MHz wide. */
+static uint8_t center_of(uint8_t channel) {
+  if (mt7902_width_mhz != 80 || channel < 36) return channel;
+  uint8_t first = channel >= 149 ? 149 : channel >= 100 ? 100 : 36;
+  return (uint8_t)(first + (channel - first) / 16 * 16 + 6);
+}
+
+/* mt7921_mcu_set_chan_info, 20 or 80 MHz wide. */
 static int set_chan_info(mt7902_dev *dev, const mt7902_caps *caps,
                          uint32_t ext_cmd, uint8_t channel) {
   uint8_t req[76] = {0};
   req[0] = channel; /* control_ch */
-  req[1] = channel; /* center_ch */
+  req[1] = center_of(channel); /* center_ch */
+  req[2] = req[1] != channel ? 2 : 0; /* bw: CMD_CBW_80MHZ or 20 */
   req[3] = caps->nss; /* tx_streams_num */
   /* rx_streams: a mask for SET_RX_PATH, a count for CHANNEL_SWITCH */
   req[4] = ext_cmd == MCU_EXT_CMD_SET_RX_PATH ? (uint8_t)((1u << caps->nss) - 1)
@@ -184,7 +195,11 @@ static int sniffer_config(mt7902_dev *dev, uint8_t channel) {
   put_le16(req + 6, 16); /* len */
   req[10] = channel > 14 ? 2 : 1; /* ch_band */
   req[12] = channel;              /* control_ch */
-  req[14] = channel;              /* center_ch */
+  req[14] = center_of(channel);   /* center_ch */
+  if (req[14] != channel) {
+    req[11] = 1;                        /* bw: 80 MHz */
+    req[13] = channel < req[14] ? 1 : 3; /* sco: control above or below */
+  }
   req[16] = 1;                    /* drop_err */
   return cmd_acked(dev, MCU_UNI_CMD(MCU_UNI_CMD_SNIFFER), req, sizeof(req),
                    "sniffer config");

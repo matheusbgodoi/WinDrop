@@ -59,7 +59,7 @@ public static class RadioSupervisor
         // The same two commands scripts\mt7902-awdl.ps1 runs; 0 is "until stopped".
         return Supervise(owner, arguments[1],
                          new Daemon("radio", RadioProgram(root), [.. Firmware(root), Channel, "0", DataRate]),
-                         new Daemon("awdld", AwdlProgram(root), ["-c", Channel]),
+                         new Daemon("awdld", AwdlProgram(root), ["-c", Channel, "-s", "1"]),
                          LogFolder, card, inf);
     }
 

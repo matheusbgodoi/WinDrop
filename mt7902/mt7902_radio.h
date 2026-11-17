@@ -22,6 +22,10 @@ typedef struct mt7902_frame {
   int8_t rssi; /* dBm, 0 when the chip did not report it */
 } mt7902_frame;
 
+/* How wide the radio listens on 5 GHz: 20, or 80 for the block the channel
+ * is in. Set before mt7902_monitor_start. Frames still go out 20 MHz wide. */
+extern uint8_t mt7902_width_mhz;
+
 /* What the firmware does after boot before the radio is usable. */
 int mt7902_radio_init(mt7902_dev *dev, mt7902_caps *caps);
 /* Turns sniffer mode on, tuned to a 20 MHz channel. */

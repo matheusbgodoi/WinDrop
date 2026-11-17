@@ -1,6 +1,6 @@
 # Port do winawdl para a MediaTek MT7902
 
-Status: 2026-11-16. Fases 0 a 5 concluídas; fase 6 validada nos dois sentidos com o MacBook (falta o iPhone); fase 7 em andamento, com o aplicativo já recebendo e enviando. OFDM em 2,4 GHz ainda não sai. Wi-Fi e AirDrop ainda não convivem: a placa faz um ou outro.
+Status: 2026-11-16. Fases 0 a 6 concluídas: AirDrop validado nos dois sentidos com o MacBook e com o iPhone. Fase 7 em andamento: o aplicativo recebe, envia, tem o botão direito e a chave na bandeja, mas ainda não sobe o rádio nem troca o driver sozinho nesta máquina. OFDM em 2,4 GHz ainda não sai. Wi-Fi e AirDrop ainda não convivem: a placa faz um ou outro.
 
 ## Registro de resultados
 
@@ -15,6 +15,7 @@ Status: 2026-11-16. Fases 0 a 5 concluídas; fase 6 validada nos dois sentidos c
 | 2026-11-16 | 6 | Parcial. PC para Mac aprovado: `airdrop/sender.py` achou o MacBook, o pedido foi aceito e um arquivo de 20 MB chegou com SHA-256 idêntico, a 1,1 MB/s. O receptor (`airdrop/receiver.py`, "PC do Matheus") aparece no AirDrop do Mac e respondeu a `POST /Discover`. Faltam Mac para PC e os dois sentidos com o iPhone |
 | 2026-11-16 | 6 | Mac para PC aprovado: uma imagem de 104425 bytes arrastada no AirDrop do Mac chegou em Downloads pelo aplicativo (`POST /Ask` e `POST /Upload` com 200). Falta o iPhone nos dois sentidos |
 | 2026-11-16 | 7 | Parcial. O aplicativo WPF do winawdl, apontado para `radiod`, mostra o MacBook, recebe e segura arquivos. Novos: "Enviar via AirDrop" no botão direito (`app/src/Shell/SendMenu.cs`, registro em HKCU, arquivos repassados à instância aberta por pipe) e a chave "AirDrop" no menu da bandeja. Conferido por captura da janela (`scripts/app-shot.ps1`). O liga/desliga ainda não sobe o rádio sozinho nesta máquina: falta novo logon para o direito "Bloquear páginas na memória" valer |
+| 2026-11-16 | 6 | Aprovada. iPhone para PC: uma foto de 105043 bytes recebida pelo aplicativo. PC para iPhone: `sender.py --to iPhone` achou o aparelho, o pedido foi aceito e o arquivo enviado. Para o iPhone foi preciso anunciar um fluxo espacial (`awdld -s 1`) |
 
 Observações da fase 4:
 
@@ -133,3 +134,7 @@ O daemon AWDL continua GPL-3.0 (OWL) em processo separado, como no projeto origi
 - O AirDrop do Mac foi posto em "Todos" (`defaults write com.apple.sharingd DiscoverableMode Everyone`) para os testes.
 - O rádio precisa do direito "Bloquear páginas na memória" (memória AWE para DMA). `scripts/grant-lock-pages.ps1` concede à conta; vale a partir do logon seguinte. Até lá os daemons sobem como LocalSystem pelo executor (`scripts/mt7902-awdl.ps1`) e o aplicativo usa o enlace já de pé.
 - Convivência com o Wi-Fi: o desenho do winawdl é trocar o driver da placa ao ligar e devolver ao desligar (`app/src/Radio/WifiCard.cs`), o que só vale para a cópia instalada. Não é uso simultâneo.
+- **Um fluxo espacial.** O `awdld` anuncia dois por padrão e a MT7902 informa um. Com dois, o Mac funcionava mas o iPhone não: de 15 pings voltava 1, e do iPhone só chegavam repetições. Com `-s 1`, 8 de 15 (o resto é o iPhone dormindo fora das janelas dele) e o AirDrop passou a funcionar.
+- **Recepção em 80 MHz.** Em 5 GHz o rádio agora escuta o bloco de 80 MHz do canal (centro 155 para o 149) e diz isso no `HELLO`; a transmissão segue em 20 MHz. Sozinha, essa mudança não resolveu o iPhone, e fez subir muito a contagem de quadros com soma de verificação errada (centenas a cada 15 s), o que ainda não foi investigado.
+- **Risco aberto, memória para DMA.** Uma vez o rádio não subiu com "not enough free memory below 4 GiB for the DMA slab"; na tentativa seguinte subiu. A busca por páginas físicas abaixo de 4 GiB pode falhar com a memória baixa ocupada.
+- `radiod` aceita um intervalo de relatório: a cada N segundos imprime quem foi ouvido, com sinal, quadros de ação, dados para o PC e repetições. Foi o que mostrou o problema do iPhone.

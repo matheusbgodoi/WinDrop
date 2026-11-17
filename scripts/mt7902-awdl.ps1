@@ -7,7 +7,7 @@
 # The radio daemon ends by itself after -Seconds, so a forgotten session does
 # not hold the card forever; 0 means until -Stop.
 param([ValidateSet(6, 44, 149)][int]$Channel = 149, [int]$Seconds = 3600,
-      [switch]$Detail, [switch]$Stop, [string]$DataRate)
+      [switch]$Detail, [switch]$Stop, [string]$DataRate = '49', [int]$Report)
 $ErrorActionPreference = 'Stop'
 
 $repo = Split-Path $PSScriptRoot -Parent
@@ -27,9 +27,11 @@ Copy-Item "$repo\build\awdl\awdld.exe", "$repo\deps\wintun\wintun.dll" $build -F
 $radioArgs = @("$firmware\WIFI_MT7902_patch_mcu_1_1_hdr.bin",
                "$firmware\WIFI_RAM_CODE_MT7902_1.bin", "$Channel")
 $radioArgs += "$Seconds"
-if ($DataRate) { $radioArgs += $DataRate }
+$radioArgs += $DataRate
+if ($Report) { $radioArgs += "$Report" }
 & $run detach radiod @radioArgs | Out-Null
-$awdlArgs = @('-c', "$Channel")
+# One spatial stream: what the card reports. Announcing two makes an iPhone send what it cannot decode.
+$awdlArgs = @('-c', "$Channel", '-s', '1')
 if ($Detail) { $awdlArgs += '-v' }
 & $run detach awdld @awdlArgs | Out-Null
 

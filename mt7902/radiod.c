@@ -1,12 +1,14 @@
 /* SPDX-License-Identifier: BSD-3-Clause-Clear */
 /* The MT7902 as winawdl's radio daemon: serves radio/radio_link.h on the named
  * pipe, so the AWDL daemon written for the Realtek radio runs on this card.
- *   radiod <patch.bin> <ram.bin> <channel> [seconds [data rate]]
+ *   radiod <patch.bin> <ram.bin> <channel> [seconds [data rate [report [20]]]]
  *   radiod stop
  * One thread polls the card's rings and the pipe in turn. One client at a
  * time, administrators and LocalSystem only: whoever holds the pipe puts raw
  * frames on air. With `seconds` (0 for never) the daemon ends by itself. The
- * data rate is in the chip's encoding, in hexadecimal: see mt7902_radio.h. */
+ * data rate is in the chip's encoding, in hexadecimal: see mt7902_radio.h.
+ * `report` is how many seconds apart to print who was heard; 0 is never.
+ * A 5 GHz channel is received 80 MHz wide unless a final 20 says otherwise. */
 #include "../radio/radio_link.h"
 #include "mt7902_radio.h"
 #include "mt7902_regs.h"
@@ -33,7 +35,19 @@ typedef struct pipe_io {
   size_t filled;
 } pipe_io;
 
+/* What one station was heard sending, for the periodic report. */
+typedef struct talker {
+  uint8_t mac[6];
+  unsigned action, data_to_us, retried, other;
+  int rssi;
+} talker;
+#define TALKERS 12
+
 typedef struct radio {
+  uint8_t own[6]; /* the address the client's frames come from */
+  talker talkers[TALKERS];
+  unsigned fcs_errors, heard;
+  ULONGLONG next_report;
   mt7902_dev dev;
   mt7902_caps caps;
   uint8_t channel;
@@ -185,6 +199,7 @@ static int handle_message(radio *r, uint16_t type, const uint8_t *payload,
     if (len != 6) return -1;
     printf("radio: address %02x:%02x:%02x:%02x:%02x:%02x\n", payload[0],
            payload[1], payload[2], payload[3], payload[4], payload[5]);
+    memcpy(r->own, payload, 6);
     mt7902_set_address(&r->dev, payload);
     return 0;
   default:
@@ -210,6 +225,43 @@ static int drain_client(radio *r, pipe_io *p) {
   return 0;
 }
 
+static void note_talker(radio *r, const mt7902_frame *f) {
+  if (f->len < 16) return;
+  talker *t = NULL;
+  for (int i = 0; i < TALKERS && !t; i++) {
+    talker *slot = &r->talkers[i];
+    int empty = !(slot->action | slot->data_to_us | slot->other);
+    if (empty) memcpy(slot->mac, f->data + 10, 6);
+    if (empty || !memcmp(slot->mac, f->data + 10, 6)) t = slot;
+  }
+  if (!t) return;
+  t->rssi = f->rssi;
+  int data = (f->data[0] & 0x0c) == 0x08;
+  if (data && !memcmp(f->data + ADDR1, r->own, 6)) {
+    t->data_to_us++;
+    if (f->data[1] & 0x08) t->retried++;
+  } else if (f->data[0] == 0xd0) {
+    t->action++;
+  } else {
+    t->other++;
+  }
+}
+
+static void report(radio *r) {
+  printf("radio: heard %u frames, %u more with a bad checksum; sent %llu\n",
+         r->heard, r->fcs_errors, r->tx_ok);
+  for (int i = 0; i < TALKERS; i++) {
+    talker *t = &r->talkers[i];
+    if (!(t->action | t->data_to_us | t->other)) continue;
+    printf("radio:   %02x:%02x:%02x:%02x:%02x:%02x %d dBm: %u action, %u data "
+           "to us (%u repeats), %u other\n",
+           t->mac[0], t->mac[1], t->mac[2], t->mac[3], t->mac[4], t->mac[5],
+           t->rssi, t->action, t->data_to_us, t->retried, t->other);
+  }
+  memset(r->talkers, 0, sizeof(r->talkers));
+  r->heard = r->fcs_errors = 0;
+}
+
 /* Returns 1 when a buffer was taken from either ring. */
 static int forward_received(radio *r, pipe_io *p) {
   mt7902_ring *rings[] = {&r->dev.rx_data, &r->dev.rx_event};
@@ -219,7 +271,14 @@ static int forward_received(radio *r, pipe_io *p) {
     mt7902_frame f;
     if (!mt7902_rx_poll(&r->dev, rings[i], &rx)) continue;
     busy = 1;
-    if (!p->connected || mt7902_rx_frame(&rx, &f) || f.fcs_error) continue;
+    if (mt7902_rx_frame(&rx, &f)) continue;
+    if (f.fcs_error) {
+      r->fcs_errors++;
+      continue;
+    }
+    r->heard++;
+    note_talker(r, &f);
+    if (!p->connected) continue;
     if (r->filter && (f.len < 24 || memcmp(f.data + ADDR3, r->bssid, 6))) {
       r->rx_dropped++;
       continue;
@@ -272,6 +331,8 @@ int main(int argc, char **argv) {
           : 0;
   r.data_rate = argc > 5 ? (uint16_t)strtoul(argv[5], NULL, 16)
                          : MT7902_RATE_OFDM_24M;
+  unsigned report_every = argc > 6 ? (unsigned)atoi(argv[6]) : 0;
+  if (r.channel > 14 && !(argc > 7 && atoi(argv[7]) == 20)) mt7902_width_mhz = 80;
   setvbuf(stdout, NULL, _IONBF, 0);
   SetConsoleCtrlHandler(on_console, TRUE);
 
@@ -291,18 +352,25 @@ int main(int argc, char **argv) {
   if (mt7902_radio_init(&r.dev, &r.caps) ||
       mt7902_monitor_start(&r.dev, &r.caps, r.channel))
     goto out;
-  printf("radio: MT7902 on channel %u, waiting on %s\n", r.channel,
-         RADIO_LINK_PIPE_NAME);
+  printf("radio: MT7902 on channel %u, %u MHz wide, waiting on %s\n", r.channel,
+         mt7902_width_mhz, RADIO_LINK_PIPE_NAME);
 
   for (unsigned turn = 0; !g_stop && !r.dev.io_failed; turn++) {
-    if (!(turn & 0xff) &&
-        (WaitForSingleObject(stop, 0) == WAIT_OBJECT_0 ||
-         (deadline && GetTickCount64() >= deadline)))
-      break;
+    if (!(turn & 0xff)) {
+      ULONGLONG now = GetTickCount64();
+      if (WaitForSingleObject(stop, 0) == WAIT_OBJECT_0 ||
+          (deadline && now >= deadline))
+        break;
+      if (report_every && now >= r.next_report) {
+        if (r.next_report) report(&r);
+        r.next_report = now + 1000ull * report_every;
+      }
+    }
     int busy = forward_received(&r, &pipe);
     int event = pipe_pump(&pipe);
     if (event == 1) {
-      struct radio_link_hello hello = {RADIO_LINK_VERSION, r.channel, 20, {0}};
+      struct radio_link_hello hello = {RADIO_LINK_VERSION, r.channel,
+                                       mt7902_width_mhz, {0}};
       r.clients++;
       r.filter = 0;
       printf("radio: client connected\n");
