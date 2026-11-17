@@ -25,7 +25,7 @@ public interface ICard
 
 public static class WifiCard
 {
-    public const string HardwareId = @"PCI\VEN_10EC&DEV_C852";
+    public const string HardwareId = @"PCI\VEN_14C3&DEV_7902";
     /// <summary>The installed copy's certificate. The development package is signed by another and is never touched.</summary>
     public const string Signer = "winawdl driver (signed on this PC)";
     public const string InfName = "winawdl_regproxy.inf";

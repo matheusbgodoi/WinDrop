@@ -40,6 +40,11 @@ int mt7902_set_address(mt7902_dev *dev, const uint8_t *mac);
 #define MT7902_RATE_OFDM_6M 0x04b
 #define MT7902_RATE_OFDM_12M 0x04a
 #define MT7902_RATE_OFDM_24M 0x049
+#define MT7902_RATE_OFDM_54M 0x04c
+/* One spatial stream: HT is mode 2, VHT mode 4, HE mode 8, MCS below. */
+#define MT7902_RATE_HT_MCS(mcs) (0x080 | (mcs))
+#define MT7902_RATE_VHT_MCS(mcs) (0x100 | (mcs))
+#define MT7902_RATE_HE_MCS(mcs) (0x200 | (mcs))
 
 /* Spatial extension index of transmitted frames: 24 duplicates the stream on
  * both antennas, 0 sends on the first one alone. */

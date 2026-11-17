@@ -15,7 +15,12 @@ public sealed record Daemon(string Name, string Program, string[] Arguments);
 public static class RadioSupervisor
 {
     public const string Flag = "--radio";
-    public const string Channel = "44";
+    /// <summary>The MT7902 puts OFDM on air on 5 GHz only so far, and 149 is the AWDL
+    /// channel Apple devices keep to while they are on a 2.4 GHz network.</summary>
+    public const string Channel = "149";
+    /// <summary>Data frames to one device: 24 Mbit/s, in the chip's encoding. At 54 the Mac found
+    /// the PC but its requests to the receiver did not complete.</summary>
+    public const string DataRate = "49";
     public const string StatusFile = "radio.status";
     private const int InterruptWaitMs = 5000;
     private const int OwnLogLimitBytes = 64 * 1024;
@@ -27,7 +32,14 @@ public static class RadioSupervisor
         Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "winawdl", "logs");
 
     public static string RadioProgram(string root) =>
-        Found(root, @"radio\winawdl_radio.exe", @"build\radio\Release\winawdl_radio.exe");
+        Found(root, @"radio\radiod.exe", @"mt7902\build\radiod.exe");
+    /// <summary>MediaTek's firmware for the card: the patch, then the image that runs.</summary>
+    public static string[] Firmware(string root) =>
+    [
+        Found(root, @"radio\firmware\WIFI_MT7902_patch_mcu_1_1_hdr.bin",
+              @"ref\mt76\firmware\WIFI_MT7902_patch_mcu_1_1_hdr.bin"),
+        Found(root, @"radio\firmware\WIFI_RAM_CODE_MT7902_1.bin", @"ref\mt76\firmware\WIFI_RAM_CODE_MT7902_1.bin"),
+    ];
     public static string AwdlProgram(string root) => Found(root, @"awdl\awdld.exe", @"build\awdl\awdld.exe");
 
     /// <summary>A program where an installed copy keeps it, or else where a
@@ -44,9 +56,9 @@ public static class RadioSupervisor
         if (arguments.Length != 2 || !int.TryParse(arguments[0], out var owner) || Repo.Find() is not { } root)
             return 2;
         var (card, inf) = CardFor(root);
-        // The same two commands scripts\awdl-run.ps1 runs with its defaults.
+        // The same two commands scripts\mt7902-awdl.ps1 runs; 0 is "until stopped".
         return Supervise(owner, arguments[1],
-                         new Daemon("radio", RadioProgram(root), [Channel]),
+                         new Daemon("radio", RadioProgram(root), [.. Firmware(root), Channel, "0", DataRate]),
                          new Daemon("awdld", AwdlProgram(root), ["-c", Channel]),
                          LogFolder, card, inf);
     }

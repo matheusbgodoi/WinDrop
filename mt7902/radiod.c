@@ -1,11 +1,12 @@
 /* SPDX-License-Identifier: BSD-3-Clause-Clear */
 /* The MT7902 as winawdl's radio daemon: serves radio/radio_link.h on the named
  * pipe, so the AWDL daemon written for the Realtek radio runs on this card.
- *   radiod <patch.bin> <ram.bin> <channel> [seconds]
+ *   radiod <patch.bin> <ram.bin> <channel> [seconds [data rate]]
  *   radiod stop
  * One thread polls the card's rings and the pipe in turn. One client at a
  * time, administrators and LocalSystem only: whoever holds the pipe puts raw
- * frames on air. With `seconds` the daemon ends by itself, for test runs. */
+ * frames on air. With `seconds` (0 for never) the daemon ends by itself. The
+ * data rate is in the chip's encoding, in hexadecimal: see mt7902_radio.h. */
 #include "../radio/radio_link.h"
 #include "mt7902_radio.h"
 #include "mt7902_regs.h"
@@ -36,6 +37,7 @@ typedef struct radio {
   mt7902_dev dev;
   mt7902_caps caps;
   uint8_t channel;
+  uint16_t data_rate; /* for data frames to one station on 5 GHz */
   uint8_t bssid[6];
   int filter;
   uint64_t rx_sent, rx_dropped, tx_ok, tx_refused, clients;
@@ -150,7 +152,7 @@ static void transmit(radio *r, const uint8_t *payload, size_t len) {
   /* Only 1 Mb/s gets on air below 5 GHz so far. Above, data to one station
    * goes faster than the frames every neighbour has to hear. */
   uint16_t rate = r->channel <= 14 ? MT7902_RATE_CCK_1M
-                  : data && !group ? MT7902_RATE_OFDM_24M
+                  : data && !group ? r->data_rate
                                    : MT7902_RATE_OFDM_6M;
   if (mt7902_send_frame(&r->dev, frame, frame_len, rate, group))
     r->tx_refused++;
@@ -265,7 +267,11 @@ int main(int argc, char **argv) {
   static pipe_io pipe;
   r.channel = (uint8_t)atoi(argv[3]);
   ULONGLONG deadline =
-      argc > 4 ? GetTickCount64() + 1000ull * (unsigned)atoi(argv[4]) : 0;
+      argc > 4 && atoi(argv[4])
+          ? GetTickCount64() + 1000ull * (unsigned)atoi(argv[4])
+          : 0;
+  r.data_rate = argc > 5 ? (uint16_t)strtoul(argv[5], NULL, 16)
+                         : MT7902_RATE_OFDM_24M;
   setvbuf(stdout, NULL, _IONBF, 0);
   SetConsoleCtrlHandler(on_console, TRUE);
 

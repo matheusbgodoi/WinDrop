@@ -41,9 +41,11 @@ public static class Program
     {
         using var only = new Mutex(true, OnlyOne, out var first);
         using var show = new EventWaitHandle(false, EventResetMode.AutoReset, ShowSignal);
+        var files = SendMenu.FilesAmong(args);
         if (!first)
         {
-            // Already running, perhaps with its window closed: bring that one up.
+            // Already running, perhaps with its window closed: hand it the files and bring it up.
+            SendMenu.PassOn(files);
             show.Set();
             return 0;
         }
@@ -105,7 +107,14 @@ public static class Program
         };
         waiting.Start();
 
+        SendMenu.Register();
+        SendMenu.Listen(paths => app.Dispatcher.BeginInvoke(() =>
+        {
+            model.Hold(paths);
+            window.Surface();
+        }));
         model.StartTheEngine();
+        if (files.Count > 0) model.Hold(files);
         window.Show();
         app.Run();
         engine.Stop();

@@ -124,6 +124,7 @@ public sealed class Tray : IDisposable
     private readonly MainWindow _window;
     private readonly ContextMenu _menu;
     private readonly TableModel? _model;
+    private readonly MenuItem? _radioSwitch;
     private Action? _onNotice;
 
     /// <summary>With a model, the icon says under the pointer what is moving.</summary>
@@ -133,6 +134,13 @@ public sealed class Tray : IDisposable
         _model = model;
         _menu = new ContextMenu { Placement = PlacementMode.MousePoint };
         _menu.Items.Add(Item("Open winawdl", window.Surface));
+        if (model is not null)
+        {
+            // The switch of the window, within reach while the window is closed.
+            _radioSwitch = new MenuItem { Header = "AirDrop", IsCheckable = true, IsChecked = model.RadioOn };
+            _radioSwitch.Click += (_, _) => model.RadioOn = _radioSwitch.IsChecked;
+            _menu.Items.Add(_radioSwitch);
+        }
         _menu.Items.Add(Item("Quit", quit));
         _icon = new System.Windows.Forms.NotifyIcon { Text = "winawdl", Icon = Mark(), Visible = true };
         _icon.MouseClick += (_, click) =>
@@ -156,6 +164,8 @@ public sealed class Tray : IDisposable
     {
         // Progress comes many times a second, and the line changes once a percent.
         if (_model!.TrayText is var text && text != _icon.Text) _icon.Text = text;
+        if (_radioSwitch is not null && _radioSwitch.IsChecked != _model.RadioOn)
+            _radioSwitch.IsChecked = _model.RadioOn;
     }
 
     private static MenuItem Item(string header, Action run)
