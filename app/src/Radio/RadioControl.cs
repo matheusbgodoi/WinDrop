@@ -85,14 +85,23 @@ public sealed class RadioControl : IRadio
             return;
         }
         var stopName = $"winawdl-radio-stop-{Environment.ProcessId}-{++_starts}";
-        _stop = new EventWaitHandle(false, EventResetMode.ManualReset, @"Local\" + stopName);
+        // An installed copy has a task that runs the radio as LocalSystem: no question from Windows,
+        // and the stop event where a process of another session can open it.
+        var byTask = !FromSource;
+        _stop = new EventWaitHandle(false, EventResetMode.ManualReset, (byTask ? @"Global\" : @"Local\") + stopName);
         try
         {
-            _supervisor = Process.Start(new ProcessStartInfo(Environment.ProcessPath!)
-            {
-                UseShellExecute = true, Verb = "runas",
-                Arguments = $"{RadioSupervisor.Flag} {Environment.ProcessId} {stopName}",
-            });
+            _supervisor = Process.Start(byTask
+                ? new ProcessStartInfo(Environment.ProcessPath!)
+                {
+                    UseShellExecute = false, CreateNoWindow = true,
+                    Arguments = $"{RadioSupervisor.WaitFlag} {Environment.ProcessId} {stopName}",
+                }
+                : new ProcessStartInfo(Environment.ProcessPath!)
+                {
+                    UseShellExecute = true, Verb = "runas",
+                    Arguments = $"{RadioSupervisor.Flag} {Environment.ProcessId} {stopName}",
+                });
         }
         catch (Win32Exception error) when (error.NativeErrorCode == CancelledByUser)
         {

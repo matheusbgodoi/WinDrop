@@ -94,6 +94,7 @@ Step 'give the Wi-Fi card back, if winawdl''s driver has it' {
 }
 Step 'remove the task that gives Wi-Fi back when Windows starts' {
   Unregister-ScheduledTask -TaskName $StartupTask -Confirm:$false -ErrorAction SilentlyContinue
+  Unregister-ScheduledTask -TaskName 'winawdl radio' -Confirm:$false -ErrorAction SilentlyContinue
 }
 
 'Driver'

@@ -15,6 +15,90 @@ public sealed record Daemon(string Name, string Program, string[] Arguments);
 public static class RadioSupervisor
 {
     public const string Flag = "--radio";
+    /// <summary>What the installed copy's task runs, as LocalSystem: the same supervisor, told
+    /// whom to serve by the request file. LocalSystem may lock pages in memory, which the radio
+    /// daemon needs and an administrator's account has only after it is granted and signed in again.</summary>
+    public const string TaskFlag = "--radio-task";
+    /// <summary>The app's own stand-in for that supervisor, which it cannot watch: it asks for the
+    /// task and ends when the supervisor does, with the same exit code.</summary>
+    public const string WaitFlag = "--radio-wait";
+    public const string TaskName = "winawdl radio";
+    private const string StopNamePattern = @"^winawdl-radio-stop-\d+-\d+$";
+    private static readonly TimeSpan TaskStartsWithin = TimeSpan.FromSeconds(30);
+
+    /// <summary>Written by the app's account, read by the task: an owner pid and a stop event's name.</summary>
+    private static string RequestFile => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "winawdl", "radio.request");
+
+    /// <summary>`--radio-wait owner-pid stop-event-name`, without administrator rights.</summary>
+    public static int Wait(string[] arguments)
+    {
+        if (arguments.Length != 2 || !int.TryParse(arguments[0], out var owner)
+            || !System.Text.RegularExpressions.Regex.IsMatch(arguments[1], StopNamePattern))
+            return 2;
+        var status = Path.Combine(LogFolder, StatusFile);
+        // The task's copy writes the status anew; what an earlier run left there is not its word.
+        var before = File.Exists(status) ? File.GetLastWriteTimeUtc(status) : DateTime.MinValue;
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(RequestFile)!);
+            File.WriteAllText(RequestFile, $"{owner} {arguments[1]}");
+            using var asked = Process.Start(new ProcessStartInfo(
+                Path.Combine(Environment.SystemDirectory, "schtasks.exe"), $"/run /tn \"{TaskName}\"")
+            {
+                UseShellExecute = false, CreateNoWindow = true,
+            })!;
+            asked.WaitForExit();
+            if (asked.ExitCode != 0) return 2;
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException
+                                          or System.ComponentModel.Win32Exception)
+        {
+            return 2;
+        }
+        var clock = Stopwatch.StartNew();
+        var seen = false;
+        for (;;)
+        {
+            Thread.Sleep(300);
+            try
+            {
+                if (File.Exists(status) && File.GetLastWriteTimeUtc(status) > before)
+                {
+                    seen = true;
+                    var said = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(status));
+                    if (said is not null && said.GetValueOrDefault("step") == "done")
+                        return said.GetValueOrDefault("wifi") == "off" ? 5
+                            : said.GetValueOrDefault("ended") is "stopped" or "owner" ? 0 : 3;
+                }
+            }
+            catch (Exception error) when (error is IOException or JsonException or UnauthorizedAccessException)
+            {
+                // Read while it was being written: the next look will do.
+            }
+            if (!seen && clock.Elapsed > TaskStartsWithin) return 2;
+        }
+    }
+
+    /// <summary>The task's entry point: `--radio-task`, as LocalSystem.</summary>
+    public static int RunTask()
+    {
+        string[] asked;
+        try
+        {
+            asked = File.ReadAllText(RequestFile).Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            File.Delete(RequestFile);
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        {
+            return 2;
+        }
+        // The file is another account's word: nothing of it is used but a number and a name of one shape.
+        if (asked.Length != 2 || !int.TryParse(asked[0], out _)
+            || !System.Text.RegularExpressions.Regex.IsMatch(asked[1], StopNamePattern))
+            return 2;
+        return Run(asked, @"Global\");
+    }
     /// <summary>The MT7902 puts OFDM on air on 5 GHz only so far, and 149 is the AWDL
     /// channel Apple devices keep to while they are on a 2.4 GHz network.</summary>
     public const string Channel = "149";
@@ -51,7 +135,7 @@ public static class RadioSupervisor
     }
 
     /// <summary>The elevated entry point: `--radio owner-pid stop-event-name`.</summary>
-    public static int Run(string[] arguments)
+    public static int Run(string[] arguments, string scope = @"Local\")
     {
         if (arguments.Length != 2 || !int.TryParse(arguments[0], out var owner) || Repo.Find() is not { } root)
             return 2;
@@ -60,7 +144,7 @@ public static class RadioSupervisor
         return Supervise(owner, arguments[1],
                          new Daemon("radio", RadioProgram(root), [.. Firmware(root), Channel, "0", DataRate]),
                          new Daemon("awdld", AwdlProgram(root), ["-c", Channel, "-s", "1"]),
-                         LogFolder, card, inf);
+                         LogFolder, card, inf, scope: scope);
     }
 
     /// <summary>An installed copy moves the Wi-Fi card; a clone uses it as its scripts left it.</summary>
@@ -72,12 +156,13 @@ public static class RadioSupervisor
     /// taken before the daemons start and given back once both have ended; radio.status says
     /// which step is under way.</summary>
     public static int Supervise(int ownerPid, string stopName, Daemon radio, Daemon awdl, string logs,
-                                ICard? card = null, string inf = "", TimeSpan? cardWait = null)
+                                ICard? card = null, string inf = "", TimeSpan? cardWait = null,
+                                string scope = @"Local\")
     {
         Directory.CreateDirectory(logs);
         var status = Path.Combine(logs, StatusFile);
         File.Delete(status);
-        if (!EventWaitHandle.TryOpenExisting(@"Local\" + stopName, out var stop)) return 2;
+        if (!EventWaitHandle.TryOpenExisting(scope + stopName, out var stop)) return 2;
         Process owner;
         try
         {

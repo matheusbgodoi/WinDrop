@@ -22,6 +22,8 @@ public static class Program
     public static int Main(string[] args) => args switch
     {
         [RadioSupervisor.Flag, .. var rest] => RadioSupervisor.Run(rest),
+        [RadioSupervisor.TaskFlag] => RadioSupervisor.RunTask(),
+        [RadioSupervisor.WaitFlag, .. var rest] => RadioSupervisor.Wait(rest),
         [Dev.Stage.Flag, .. var rest] => Dev.Stage.Run(rest),
         [Dev.Drive.Flag, .. var rest] => Dev.Drive.Run(rest),
         [Dev.Checks.Flag, .. var rest] => Dev.Checks.Run(rest),

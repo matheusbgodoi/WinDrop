@@ -25,6 +25,7 @@ $HardwareId    = 'PCI\VEN_14C3&DEV_7902'
 $GiveBackFlag  = '--give-wifi-back'
 $LogFolder     = Join-Path $env:ProgramData 'winawdl\logs'
 $StartupTask   = 'winawdl Wi-Fi'
+$RadioTask     = 'winawdl radio'
 # Not the subject scripts\package-driver.ps1 uses: a PC set up from source
 # keeps its own certificate, and uninstalling removes only this one.
 $CertSubject   = 'CN=winawdl driver (signed on this PC)'
@@ -252,6 +253,21 @@ Step 'a task that gives Wi-Fi back when Windows starts, if winawdl still has the
   $how = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes 2)
   Register-ScheduledTask -TaskName $StartupTask -TaskPath '\' -Action $action -Trigger $when -Principal $who `
     -Settings $how -Description 'Gives the Wi-Fi card back to Windows if winawdl''s radio had it when the PC stopped.' -Force | Out-Null
+}
+Step 'a task that runs the radio as LocalSystem when the app asks, with no question from Windows' {
+  # LocalSystem may lock pages in memory, which the radio needs. It runs only what is in this
+  # folder, and whoever is signed in may start it: that is what the Radio switch does.
+  $action = New-ScheduledTaskAction -Execute (Join-Path $Target 'winawdl.exe') -Argument '--radio-task' -WorkingDirectory $Target
+  $who = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest
+  $how = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit ([TimeSpan]::Zero)
+  Register-ScheduledTask -TaskName $RadioTask -TaskPath '\' -Action $action -Principal $who -Settings $how `
+    -Description 'Runs winawdl''s radio while its Radio switch is on.' -Force | Out-Null
+  $service = New-Object -ComObject Schedule.Service
+  $service.Connect()
+  $task = $service.GetFolder('\').GetTask($RadioTask)
+  $dacl = 4
+  # Read and run, for interactive users.
+  $task.SetSecurityDescriptor($task.GetSecurityDescriptor($dacl) + '(A;;GRGX;;;IU)', 0)
 }
 
 if ($Setup) {
