@@ -2,6 +2,7 @@
 /* The MT7902 as winawdl's radio daemon: serves radio/radio_link.h on the named
  * pipe, so the AWDL daemon written for the Realtek radio runs on this card.
  *   radiod <patch.bin> <ram.bin> <channel> [seconds]
+ *   radiod stop
  * One thread polls the card's rings and the pipe in turn. One client at a
  * time, administrators and LocalSystem only: whoever holds the pipe puts raw
  * frames on air. With `seconds` the daemon ends by itself, for test runs. */
@@ -16,6 +17,7 @@
 #include <sddl.h>
 
 #define PIPE_BUFFER (1u << 16)
+#define STOP_EVENT "Global\\winawdl-radio-stop"
 #define RADIOTAP_RX_BYTES 10 /* FLAGS and DBM_ANTSIGNAL, as the Realtek radio */
 #define ADDR1 4
 #define ADDR3 16
@@ -231,7 +233,30 @@ static int forward_received(radio *r, pipe_io *p) {
   return busy;
 }
 
+/* Asks a running daemon to end and waits until its pipe is gone. */
+static int stop_running(void) {
+  HANDLE stop = OpenEventA(EVENT_MODIFY_STATE, FALSE, STOP_EVENT);
+  if (!stop) {
+    printf("radio: no daemon is running\n");
+    return 0;
+  }
+  SetEvent(stop);
+  CloseHandle(stop);
+  for (int i = 0; i < 100; i++) {
+    stop = OpenEventA(EVENT_MODIFY_STATE, FALSE, STOP_EVENT);
+    if (!stop) {
+      printf("radio: daemon stopped\n");
+      return 0;
+    }
+    CloseHandle(stop);
+    Sleep(100);
+  }
+  fprintf(stderr, "radio: the daemon did not stop\n");
+  return 1;
+}
+
 int main(int argc, char **argv) {
+  if (argc == 2 && !strcmp(argv[1], "stop")) return stop_running();
   if (argc < 4) {
     fprintf(stderr, "usage: radiod <patch.bin> <ram.bin> <channel> [seconds]\n");
     return 2;
@@ -244,6 +269,11 @@ int main(int argc, char **argv) {
   setvbuf(stdout, NULL, _IONBF, 0);
   SetConsoleCtrlHandler(on_console, TRUE);
 
+  HANDLE stop = CreateEventA(NULL, TRUE, FALSE, STOP_EVENT);
+  if (!stop || GetLastError() == ERROR_ALREADY_EXISTS) {
+    fprintf(stderr, "radio: another radio daemon is running\n");
+    return 2;
+  }
   if (pipe_open(&pipe)) {
     fprintf(stderr, "radio: cannot create %s (error %lu): is another radio "
                     "daemon running?\n",
@@ -258,8 +288,11 @@ int main(int argc, char **argv) {
   printf("radio: MT7902 on channel %u, waiting on %s\n", r.channel,
          RADIO_LINK_PIPE_NAME);
 
-  while (!g_stop && !r.dev.io_failed &&
-         (!deadline || GetTickCount64() < deadline)) {
+  for (unsigned turn = 0; !g_stop && !r.dev.io_failed; turn++) {
+    if (!(turn & 0xff) &&
+        (WaitForSingleObject(stop, 0) == WAIT_OBJECT_0 ||
+         (deadline && GetTickCount64() >= deadline)))
+      break;
     int busy = forward_received(&r, &pipe);
     int event = pipe_pump(&pipe);
     if (event == 1) {
