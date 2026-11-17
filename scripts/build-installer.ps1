@@ -88,7 +88,9 @@ if ($LASTEXITCODE -ne 0) { throw "stampinf failed ($LASTEXITCODE)" }
 if ($LASTEXITCODE -ne 0) { throw "Inf2Cat failed ($LASTEXITCODE)" }
 
 # What ships must not say who built it, or where.
-$account = $env:USERNAME
+# The folder of the profile, which is what a path built into a file would carry. The bare
+# account name would also match the name of the fork's repository, which is meant to be there.
+$account = Split-Path $env:USERPROFILE -Leaf
 # SOURCE.txt names the fork's repository on purpose, and that carries its owner's name.
 $telling = Get-ChildItem $stage -Recurse -File | Where-Object Name -ne 'SOURCE.txt' | Where-Object {
   $bytes = [IO.File]::ReadAllBytes($_.FullName)
